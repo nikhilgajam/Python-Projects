@@ -36,7 +36,7 @@ def add():
             arr[k] = float(i)
             k += 1
 
-        arr = np.array([arr])   # dtype = int64 and more
+        arr = np.array([arr])   # We can add dtype = int64 and more
 
         arr1 = []
         arr1 = (e2.get())
@@ -84,7 +84,7 @@ def sub():
             arr[k] = float(i)
             k += 1
 
-        arr = np.array([arr])
+        arr = np.array([arr])   # We can add dtype = int64 and more
 
         arr1 = []
         arr1 = (e2.get())
@@ -132,7 +132,7 @@ def mult():
             arr[k] = float(i)
             k += 1
 
-        arr = np.array([arr])
+        arr = np.array([arr])   # We can add dtype = int64 and more
 
         arr1 = []
         arr1 = (e2.get())
@@ -180,7 +180,7 @@ def div():
             arr[k] = float(i)
             k += 1
 
-        arr = np.array([arr])
+        arr = np.array([arr])   # We can add dtype = int64 and more
 
         arr1 = []
         arr1 = (e2.get())
@@ -226,7 +226,7 @@ def tran():
             arr[k] = float(i)
             k += 1
 
-        arr = np.array([arr])
+        arr = np.array([arr])   # We can add dtype = int64 and more
 
         try:
             arr = np.reshape(arr, (r1, c1))
@@ -259,7 +259,7 @@ def det():
             arr[k] = float(i)
             k += 1
 
-        arr = np.array([arr])
+        arr = np.array([arr])  # We can add dtype = int64 and more
 
         try:
             arr = np.reshape(arr, (r1, c1))
@@ -292,7 +292,7 @@ def inv():
             arr[k] = float(i)
             k += 1
 
-        arr = np.array([arr])
+        arr = np.array([arr])   # We can add dtype = int64 and more
 
         try:
             arr = np.reshape(arr, (r1, c1))

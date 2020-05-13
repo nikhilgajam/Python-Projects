@@ -36,7 +36,7 @@ def add():
             arr[k] = float(i)
             k += 1
 
-        arr = np.array([arr])
+        arr = np.array([arr])   # dtype = int64 and more
 
         arr1 = []
         arr1 = (e2.get())
@@ -84,7 +84,7 @@ def sub():
             arr[k] = float(i)
             k += 1
 
-        arr = np.array([arr])     # dtype = int64 and more
+        arr = np.array([arr])
 
         arr1 = []
         arr1 = (e2.get())

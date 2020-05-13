@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import messagebox as tm
 import numpy as np
 
+
 root = Tk()
 root.title("Matrix Calculations")
 root.geometry("883x652")
@@ -35,7 +36,7 @@ def add():
             arr[k] = float(i)
             k += 1
 
-        arr = np.array([arr], dtype="int16")
+        arr = np.array([arr])
 
         arr1 = []
         arr1 = (e2.get())
@@ -46,7 +47,7 @@ def add():
             arr1[k] = float(j)
             k += 1
 
-        arr1 = np.array([arr1], dtype="int16")
+        arr1 = np.array([arr1])
         ans = 0
 
         try:
@@ -83,7 +84,7 @@ def sub():
             arr[k] = float(i)
             k += 1
 
-        arr = np.array([arr], dtype="int16")
+        arr = np.array([arr])     # dtype = int64 and more
 
         arr1 = []
         arr1 = (e2.get())
@@ -94,7 +95,7 @@ def sub():
             arr1[k] = float(j)
             k += 1
 
-        arr1 = np.array([arr1], dtype="int16")
+        arr1 = np.array([arr1])
         ans = 0
 
         try:
@@ -131,7 +132,7 @@ def mult():
             arr[k] = float(i)
             k += 1
 
-        arr = np.array([arr], dtype="int16")
+        arr = np.array([arr])
 
         arr1 = []
         arr1 = (e2.get())
@@ -142,7 +143,7 @@ def mult():
             arr1[k] = float(j)
             k += 1
 
-        arr1 = np.array([arr1], dtype="int16")
+        arr1 = np.array([arr1])
         ans = 0
 
         try:
@@ -179,7 +180,7 @@ def div():
             arr[k] = float(i)
             k += 1
 
-        arr = np.array([arr], dtype="int16")
+        arr = np.array([arr])
 
         arr1 = []
         arr1 = (e2.get())
@@ -190,7 +191,7 @@ def div():
             arr1[k] = float(j)
             k += 1
 
-        arr1 = np.array([arr1], dtype="int16")
+        arr1 = np.array([arr1])
         ans = 0
 
         try:
@@ -225,7 +226,7 @@ def tran():
             arr[k] = float(i)
             k += 1
 
-        arr = np.array([arr], dtype="int16")
+        arr = np.array([arr])
 
         try:
             arr = np.reshape(arr, (r1, c1))
@@ -258,7 +259,7 @@ def det():
             arr[k] = float(i)
             k += 1
 
-        arr = np.array([arr], dtype="int16")
+        arr = np.array([arr])
 
         try:
             arr = np.reshape(arr, (r1, c1))
@@ -291,7 +292,7 @@ def inv():
             arr[k] = float(i)
             k += 1
 
-        arr = np.array([arr], dtype="int16")
+        arr = np.array([arr])
 
         try:
             arr = np.reshape(arr, (r1, c1))

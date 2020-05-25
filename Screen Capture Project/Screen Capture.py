@@ -28,7 +28,7 @@ def about():
     tm.showinfo("About Creator", "This code is written by Nikhil")
 
 
-# Main window
+# Main
 
 root = Tk()
 root.iconbitmap(True, "images/win_icon.ico")

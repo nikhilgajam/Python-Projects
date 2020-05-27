@@ -19,9 +19,11 @@ def screen_shot():
                                                        ("BMP", "*.bmp")))
     # checks the path exists or not
     if save_path == "":
+        root.state("normal")
         return
     # Saving the image
     image.save(save_path)
+    root.state("normal")
 
 
 def about():
@@ -33,7 +35,6 @@ def about():
 root = Tk()
 root.iconbitmap(True, "images/win_icon.ico")
 root.title("Screen Capture")
-
 # Menu
 
 menu = Menu(root)

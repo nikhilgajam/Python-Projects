@@ -94,7 +94,7 @@ def paper(event=""):
     game('p')
 
 
-def scissor(event=""):
+def scissors(event=""):
     game('s')
 
 
@@ -117,6 +117,7 @@ def about(event=""):
     tell()
 
     top.mainloop()
+
 
 def tell():
     playsound("sounds/about.mp3")
@@ -204,7 +205,7 @@ screen.configure(state=DISABLED)
 
 screen.bind("<Key-1>", rock)
 screen.bind("<Key-2>", paper)
-screen.bind("<Key-3>", scissor)
+screen.bind("<Key-3>", scissors)
 screen.bind("<Return>", done)
 
 # Rock Paper Scissor Buttons
@@ -219,7 +220,7 @@ btn1.grid(row=0, column=0, padx=6)
 btn2 = ttk.Button(buttons, text="Paper", command=paper)
 btn2.grid(row=0, column=1, padx=6)
 
-btn3 = ttk.Button(buttons, text="Scissor", command=scissor)
+btn3 = ttk.Button(buttons, text="Scissors", command=scissors)
 btn3.grid(row=0, column=2, padx=6)
 
 # Radio Buttons
@@ -239,7 +240,6 @@ sounds_mute = ttk.Radiobutton(radio, variable=sound_var, value="off", text="Off"
 sounds_mute.grid(row=1, column=3)
 
 # Done Button
-
 done = ttk.Button(root, text="Done", command=done).pack(padx=5, pady=3)
 
 root.mainloop()

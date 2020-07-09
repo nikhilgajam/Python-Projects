@@ -1,0 +1,8 @@
+pip install PyInstaller
+
+pyinstaller --onefile -w -i images\icon.ico Hello.py
+
+You should enter that above command in cmd 
+--onefile = will compress to a single file and you can remove that to get uncompressed executable
+-w = not command prompt application
+-i = add a image to executable

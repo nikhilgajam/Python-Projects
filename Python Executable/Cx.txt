@@ -1,0 +1,5 @@
+pip install cx-freeze
+
+Type given command in cmd and make some changes to setup.py and you need to have tcl86t.dll & tk86t.dll these can be found in python directory
+
+python setup.py build

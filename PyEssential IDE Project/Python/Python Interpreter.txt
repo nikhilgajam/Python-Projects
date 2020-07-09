@@ -1,0 +1,1 @@
+Go to "https://www.python.org/downloads/windows" and download Windows x86-64 embeddable zip and keep in this directory

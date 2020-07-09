@@ -1,0 +1,3 @@
+Build With Python Tkinter
+
+python setup.py build

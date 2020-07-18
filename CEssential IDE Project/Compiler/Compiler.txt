@@ -1,0 +1,1 @@
+Go to winlibs.com and download the compiler and place all the contents in this place

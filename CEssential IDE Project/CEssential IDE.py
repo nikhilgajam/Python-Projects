@@ -60,20 +60,24 @@ def opens(event=""):
 
 
 def new(event=""):
+    global path
     editor.mark_set(INSERT, END)
     pos = editor.index(INSERT)
 
     if pos == "1.0":
         editor.delete(1.0, END)
+        path = ""
     else:
         ask = tm.askyesnocancel("CEssential IDE", "Do you want to save this text?")
         if ask is True:
             get = save_as()
             if get is True:
                 editor.delete(1.0, END)
+                path = ""
 
         elif ask is False:
             editor.delete(1.0, END)
+            path = ""
 
     root.title("CEssential IDE")
 
@@ -319,9 +323,8 @@ def build(event=""):
         return
 
     if path.endswith(".c"):
-        os.system("cmd /c start cmd.exe /K \"cd Compiler\\bin && gcc -o \"" + path[0:len(path)-2] + "\" \"" + path + "\" && title CEssential IDE && exit\"")
+        os.system("cmd /c start cmd.exe /K \"cd Compiler\\bin && gcc -o \"" + path[0:len(path)-2] + "\" \"" + path + "\" && title CEssential IDE && exit || title CEssential IDE && pause && exit \"")
     elif path.endswith(".cpp"):
-        print(path[0:len(path)-4], path)
         os.system("cmd /c start cmd.exe /K \"cd Compiler\\bin && g++ -o \"" + path[0:len(path)-4] + ".exe\" \"" + path + "\" && title CEssential IDE && exit\"")
 
 
@@ -333,9 +336,10 @@ def run(event=""):
         return
 
     if path.endswith(".c"):
-        os.system("cmd /c start cmd.exe /K \"\"" + path[0:len(path)-2] + ".exe\"" + " && title CEssential IDE && pause && exit\"")
+        os.system("cmd /c start cmd.exe /K \" " + os.path.dirname(path)[0:2] + " && cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-2] + ".exe\"" + " && echo. && title CEssential IDE && pause && exit || echo. && title CEssential IDE && pause && exit \"")
     elif path.endswith(".cpp"):
-        os.system("cmd /c start cmd.exe /K \"\"" + path[0:len(path)-4] + ".exe\"" + " && title CEssential IDE && pause && exit\"")
+        os.system("cmd /c start cmd.exe /K \" " + os.path.dirname(path)[0:2] + " && cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-4] + ".exe\"" + " && echo. && title CEssential IDE && pause && exit || echo. && title CEssential IDE && pause && exit \"")
+
 
 def build_run(event=""):
     if path != "":
@@ -345,9 +349,9 @@ def build_run(event=""):
         return
 
     if path.endswith(".c"):
-        os.system("cmd /c start cmd.exe /K \"cd Compiler\\bin && gcc -o \"" + path[0:len(path)-2] + "\" \"" + path + "\" && \"" + path[0:len(path)-2] + ".exe\"" + "&& title CEssential IDE && pause && exit\"")
+        os.system("cmd /c start cmd.exe /K \"cd Compiler\\bin && gcc -o \"" + path[0:len(path)-2] + "\" \"" + path + "\" && " + os.path.dirname(path)[0:2] + "&& cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-2] + ".exe\"" + " && echo. && title CEssential IDE && pause && exit || echo. && title CEssential IDE && pause && exit \"")
     elif path.endswith(".cpp"):
-        os.system("cmd /c start cmd.exe /K \"cd Compiler\\bin && g++ -o \"" + path[0:len(path)-4] + "\" \"" + path + "\" && \"" + path[0:len(path)-4] + ".exe\"" + "&& title CEssential IDE && pause && exit\"")
+        os.system("cmd /c start cmd.exe /K \"cd Compiler\\bin && g++ -o \"" + path[0:len(path)-4] + "\" \"" + path + "\" && " + os.path.dirname(path)[0:2] + "&& cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-4] + ".exe\"" + " && echo. && title CEssential IDE && pause && exit || echo. && title CEssential IDE && pause && exit \"")
 
 
 def update_status_bar(event=""):
@@ -376,7 +380,6 @@ statusBar = Label(root, text="Size  :  " + str(text_size) + "    |    ANSI    | 
 
 statusBar.pack(side=BOTTOM, fill=X)
 
-
 # Scrollbar
 
 hscroll = Scrollbar(root, orient=HORIZONTAL, repeatdelay=100000)
@@ -403,7 +406,6 @@ editor.bind("<Tab>", tab)
 editor.bind("<Control-b>", build)
 editor.bind("<Control-r>", run)
 editor.bind("<Control-q>", build_run)
-
 root.bind("<Key>", update_status_bar)
 root.bind("<Button>", update_status_bar)
 root.bind("<Enter>", update_status_bar)
@@ -482,7 +484,6 @@ hm.add_command(label="About Us", command=helps)
 # Popup Menu
 
 popup_menu = Menu(root, tearoff=0)
-
 popup_menu.add_command(label="Cut", command=cut)
 popup_menu.add_command(label="Copy", command=copy)
 popup_menu.add_command(label="Paste", command=paste)

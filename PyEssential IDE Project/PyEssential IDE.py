@@ -60,20 +60,24 @@ def opens(event=""):
 
 
 def new(event=""):
+    global path
     editor.mark_set(INSERT, END)
     pos = editor.index(INSERT)
 
     if pos == "1.0":
         editor.delete(1.0, END)
+        path = ""
     else:
         ask = tm.askyesnocancel("PyEssential IDE", "Do you want to save this text?")
         if ask is True:
             get = save_as()
             if get is True:
                 editor.delete(1.0, END)
+                path = ""
 
         elif ask is False:
             editor.delete(1.0, END)
+            path = ""
 
     root.title("PyEssential IDE")
 
@@ -317,7 +321,7 @@ def build_run(event=""):
     else:
         tm.showinfo("PyEssential IDE", "Save the file to build")
         return
-    os.system("cmd /c start cmd.exe /K \"Python\\python.exe \"" + path + "\" && title PyEssential IDE && pause && exit\"")
+    os.system("cmd /c start cmd.exe /K \" " + os.path.dirname(path)[0:2] + " &&  cd \"" + os.path.dirname(path) + "\" && \"" + os.getcwd() + "\\Python\\python.exe\" \"" + path + "\" && echo. && title PyEssential IDE && pause && exit || echo. && title PyEssential IDE && pause && exit \"")
 
 
 def update_status_bar(event=""):
@@ -370,6 +374,7 @@ editor.bind("<Control-g>", search)
 editor.bind("<Control-t>", counts)
 editor.bind("<Control-d>", time_date)
 editor.bind("<Tab>", tab)
+
 editor.bind("<Control-b>", build_run)
 
 root.bind("<Key>", update_status_bar)
@@ -388,6 +393,7 @@ hscroll['width'] = 0
 # Menu
 
 m = Menu(root)
+
 root.config(menu=m)
 
 fm = Menu(m, tearoff=0)

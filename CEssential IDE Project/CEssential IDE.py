@@ -4,6 +4,7 @@ from tkinter import filedialog
 from tkinter.font import Font
 from tkinter import simpledialog
 from datetime import datetime
+import subprocess
 import time
 import os
 
@@ -93,7 +94,7 @@ def save_as():
         path = saveas
         text = editor.get(1.0, END)
         with open(saveas, 'w', encoding="ansi") as p:
-            p.write(text)
+            p.write(text.rstrip())
         count += 1
         root.title("CEssential IDE  –  " + os.path.basename(path))
         return True
@@ -107,7 +108,7 @@ def save(event=""):
     else:
         saves = editor.get(1.0, END)
         os.remove(path)
-        with open(path, "w") as p:
+        with open(path, "w", encoding="ansi") as p:
             p.write(str(saves))
             count = 1
 
@@ -323,9 +324,11 @@ def build(event=""):
         return
 
     if path.endswith(".c"):
-        os.system("cmd /c start cmd.exe /K \"cd Compiler\\bin && gcc -o \"" + path[0:len(path)-2] + "\" \"" + path + "\" && title CEssential IDE && exit || title CEssential IDE && pause && exit \"")
+        # os.system("cmd /c start cmd.exe /K \"cd Compiler\\bin && gcc -o \"" + path[0:len(path)-2] + "\" \"" + path + "\" && title CEssential IDE && exit || title CEssential IDE && pause && exit \"")
+        subprocess.Popen("cmd /c start cmd.exe /K \"cd Compiler\\bin && gcc -o \"" + path[0:len(path)-2] + "\" \"" + path + "\" && title CEssential IDE && exit || title CEssential IDE && pause && exit \"", shell=True)
     elif path.endswith(".cpp"):
-        os.system("cmd /c start cmd.exe /K \"cd Compiler\\bin && g++ -o \"" + path[0:len(path)-4] + ".exe\" \"" + path + "\" && title CEssential IDE && exit\"")
+        # os.system("cmd /c start cmd.exe /K \"cd Compiler\\bin && g++ -o \"" + path[0:len(path)-4] + ".exe\" \"" + path + "\" && title CEssential IDE && exit\"")
+        subprocess.Popen("cmd /c start cmd.exe /K \"cd Compiler\\bin && g++ -o \"" + path[0:len(path)-4] + ".exe\" \"" + path + "\" && title CEssential IDE && exit\"", shell=True)
 
 
 def run(event=""):
@@ -336,9 +339,11 @@ def run(event=""):
         return
 
     if path.endswith(".c"):
-        os.system("cmd /c start cmd.exe /K \" " + os.path.dirname(path)[0:2] + " && cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-2] + ".exe\"" + " && echo. && title CEssential IDE && pause && exit || echo. && title CEssential IDE && pause && exit \"")
+        # os.system("cmd /c start cmd.exe /K \" " + os.path.dirname(path)[0:2] + " && cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-2] + ".exe\"" + " && echo. && title CEssential IDE && pause && exit || echo. && title CEssential IDE && pause && exit \"")
+        subprocess.Popen("cmd /c start cmd.exe /K \" " + os.path.dirname(path)[0:2] + " && cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-2] + ".exe\"" + " && echo. && title CEssential IDE && pause && exit || echo. && title CEssential IDE && pause && exit \"", shell=True)
     elif path.endswith(".cpp"):
-        os.system("cmd /c start cmd.exe /K \" " + os.path.dirname(path)[0:2] + " && cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-4] + ".exe\"" + " && echo. && title CEssential IDE && pause && exit || echo. && title CEssential IDE && pause && exit \"")
+        # os.system("cmd /c start cmd.exe /K \" " + os.path.dirname(path)[0:2] + " && cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-4] + ".exe\"" + " && echo. && title CEssential IDE && pause && exit || echo. && title CEssential IDE && pause && exit \"")
+        subprocess.Popen("cmd /c start cmd.exe /K \" " + os.path.dirname(path)[0:2] + " && cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-4] + ".exe\"" + " && echo. && title CEssential IDE && pause && exit || echo. && title CEssential IDE && pause && exit \"", shell=True)
 
 
 def build_run(event=""):
@@ -349,9 +354,11 @@ def build_run(event=""):
         return
 
     if path.endswith(".c"):
-        os.system("cmd /c start cmd.exe /K \"cd Compiler\\bin && gcc -o \"" + path[0:len(path)-2] + "\" \"" + path + "\" && " + os.path.dirname(path)[0:2] + "&& cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-2] + ".exe\"" + " && echo. && title CEssential IDE && pause && exit || echo. && title CEssential IDE && pause && exit \"")
+        # os.system("cmd /c start cmd.exe /K \"cd Compiler\\bin && gcc -o \"" + path[0:len(path)-2] + "\" \"" + path + "\" && " + os.path.dirname(path)[0:2] + "&& cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-2] + ".exe\"" + " && echo. && title CEssential IDE && pause && exit || echo. && title CEssential IDE && pause && exit \"")
+        subprocess.Popen("cmd /c start cmd.exe /K \"cd Compiler\\bin && gcc -o \"" + path[0:len(path)-2] + "\" \"" + path + "\" && " + os.path.dirname(path)[0:2] + "&& cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-2] + ".exe\"" + " && echo. && title CEssential IDE && pause && exit || echo. && title CEssential IDE && pause && exit \"", shell=True)
     elif path.endswith(".cpp"):
-        os.system("cmd /c start cmd.exe /K \"cd Compiler\\bin && g++ -o \"" + path[0:len(path)-4] + "\" \"" + path + "\" && " + os.path.dirname(path)[0:2] + "&& cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-4] + ".exe\"" + " && echo. && title CEssential IDE && pause && exit || echo. && title CEssential IDE && pause && exit \"")
+        # os.system("cmd /c start cmd.exe /K \"cd Compiler\\bin && g++ -o \"" + path[0:len(path)-4] + "\" \"" + path + "\" && " + os.path.dirname(path)[0:2] + "&& cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-4] + ".exe\"" + " && echo. && title CEssential IDE && pause && exit || echo. && title CEssential IDE && pause && exit \"")
+        subprocess.Popen("cmd /c start cmd.exe /K \"cd Compiler\\bin && g++ -o \"" + path[0:len(path)-4] + "\" \"" + path + "\" && " + os.path.dirname(path)[0:2] + "&& cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-4] + ".exe\"" + " && echo. && title CEssential IDE && pause && exit || echo. && title CEssential IDE && pause && exit \"", shell=True)
 
 
 def update_status_bar(event=""):
@@ -380,6 +387,7 @@ statusBar = Label(root, text="Size  :  " + str(text_size) + "    |    ANSI    | 
 
 statusBar.pack(side=BOTTOM, fill=X)
 
+
 # Scrollbar
 
 hscroll = Scrollbar(root, orient=HORIZONTAL, repeatdelay=100000)
@@ -406,6 +414,7 @@ editor.bind("<Tab>", tab)
 editor.bind("<Control-b>", build)
 editor.bind("<Control-r>", run)
 editor.bind("<Control-q>", build_run)
+
 root.bind("<Key>", update_status_bar)
 root.bind("<Button>", update_status_bar)
 root.bind("<Enter>", update_status_bar)
@@ -484,6 +493,7 @@ hm.add_command(label="About Us", command=helps)
 # Popup Menu
 
 popup_menu = Menu(root, tearoff=0)
+
 popup_menu.add_command(label="Cut", command=cut)
 popup_menu.add_command(label="Copy", command=copy)
 popup_menu.add_command(label="Paste", command=paste)

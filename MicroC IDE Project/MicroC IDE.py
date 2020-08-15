@@ -4,6 +4,7 @@ from tkinter import filedialog
 from tkinter.font import Font
 from tkinter import simpledialog
 from datetime import datetime
+import subprocess
 import time
 import os
 
@@ -93,7 +94,7 @@ def save_as():
         path = saveas
         text = editor.get(1.0, END)
         with open(saveas, 'w', encoding="ansi") as p:
-            p.write(text)
+            p.write(text.rstrip())
         count += 1
         root.title("MicroC IDE  –  " + os.path.basename(path))
         return True
@@ -107,8 +108,8 @@ def save(event=""):
     else:
         saves = editor.get(1.0, END)
         os.remove(path)
-        with open(path, "w") as p:
-            p.write(str(saves))
+        with open(path, "w", encoding="ansi") as p:
+            p.write(str(saves).rstrip())
             count = 1
 
 
@@ -177,6 +178,7 @@ def close():
 
 
 def time_date(event=""):
+
     c = time.ctime(time.time())
     d = datetime.strptime(c[11:16], "%H:%M")
     d = d.strftime("%I:%M %p")
@@ -326,7 +328,8 @@ def build(event=""):
         tm.showinfo("MicroC IDE", "Save the file to build")
         return
 
-    os.system("cmd /c start cmd.exe /K \"Compiler\\tcc\\tcc -o \"" + path[0:len(path)-2] + ".exe\" \"" + path + "\" && title MicroC IDE && exit || title MicroC IDE && pause && exit \"")
+    # os.system("cmd /c start cmd.exe /K \"Compiler\\tcc\\tcc -o \"" + path[0:len(path)-2] + ".exe\" \"" + path + "\" && title MicroC IDE && exit || title MicroC IDE && pause && exit \"")
+    subprocess.Popen("cmd /c start cmd.exe /K \"Compiler\\tcc\\tcc -o \"" + path[0:len(path)-2] + ".exe\" \"" + path + "\" && title MicroC IDE && exit || title MicroC IDE && pause && exit \"", shell=True)
 
 
 def run(event=""):
@@ -336,7 +339,8 @@ def run(event=""):
         tm.showinfo("MicroC IDE", "Compile the program to run")
         return
 
-    os.system("cmd /c start cmd.exe /K \" " + os.path.dirname(path)[0:2] + " && cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-2] + ".exe\"" + " && echo. && title MicroC IDE && pause && exit || echo. && title MicroC IDE && pause && exit \"")
+    # os.system("cmd /c start cmd.exe /K \" " + os.path.dirname(path)[0:2] + " && cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-2] + ".exe\"" + " && echo. && title MicroC IDE && pause && exit || echo. && title MicroC IDE && pause && exit \"")
+    subprocess.Popen("cmd /c start cmd.exe /K \" " + os.path.dirname(path)[0:2] + " && cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-2] + ".exe\"" + " && echo. && title MicroC IDE && pause && exit || echo. && title MicroC IDE && pause && exit \"", shell=True)
 
 
 def build_run(event=""):
@@ -346,7 +350,8 @@ def build_run(event=""):
         tm.showinfo("MicroC IDE", "Save the file to build")
         return
 
-    os.system("cmd /c start cmd.exe /K \" Compiler\\tcc\\tcc -o \"" + path[0:len(path)-2] + ".exe\" \"" + path + "\" &&" + os.path.dirname(path)[0:2] + "&& cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-2] + ".exe\"" + " && echo. && title MicroC IDE && pause && exit || echo. && title MicroC IDE && pause && exit \"")
+    # os.system("cmd /c start cmd.exe /K \" Compiler\\tcc\\tcc -o \"" + path[0:len(path)-2] + ".exe\" \"" + path + "\" &&" + os.path.dirname(path)[0:2] + "&& cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-2] + ".exe\"" + " && echo. && title MicroC IDE && pause && exit || echo. && title MicroC IDE && pause && exit \"")
+    subprocess.Popen("cmd /c start cmd.exe /K \" Compiler\\tcc\\tcc -o \"" + path[0:len(path)-2] + ".exe\" \"" + path + "\" &&" + os.path.dirname(path)[0:2] + "&& cd \"" + os.path.dirname(path) + "\" && \"" + path[0:len(path)-2] + ".exe\"" + " && echo. && title MicroC IDE && pause && exit || echo. && title MicroC IDE && pause && exit \"", shell=True)
 
 
 def update_status_bar(event=""):

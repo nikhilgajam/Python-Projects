@@ -109,7 +109,7 @@ def save(event=""):
         saves = editor.get(1.0, END)
         os.remove(path)
         with open(path, "w", encoding="ansi") as p:
-            p.write(str(saves))
+            p.write(str(saves).rstrip())
             count = 1
 
 

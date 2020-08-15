@@ -4,6 +4,7 @@ from tkinter import filedialog
 from tkinter.font import Font
 from tkinter import simpledialog
 from datetime import datetime
+import subprocess
 import time
 import os
 
@@ -93,7 +94,7 @@ def save_as():
         path = saveas
         text = editor.get(1.0, END)
         with open(saveas, 'w', encoding="ansi") as p:
-            p.write(text)
+            p.write(text.rstrip())
         count += 1
         root.title("PyEssential IDE  –  " + os.path.basename(path))
         return True
@@ -107,8 +108,8 @@ def save(event=""):
     else:
         saves = editor.get(1.0, END)
         os.remove(path)
-        with open(path, "w") as p:
-            p.write(str(saves))
+        with open(path, "w", encoding="ansi") as p:
+            p.write(str(saves).rstrip())
             count = 1
 
 
@@ -321,7 +322,8 @@ def build_run(event=""):
     else:
         tm.showinfo("PyEssential IDE", "Save the file to build")
         return
-    os.system("cmd /c start cmd.exe /K \" " + os.path.dirname(path)[0:2] + " &&  cd \"" + os.path.dirname(path) + "\" && \"" + os.getcwd() + "\\Python\\python.exe\" \"" + path + "\" && echo. && title PyEssential IDE && pause && exit || echo. && title PyEssential IDE && pause && exit \"")
+    # os.system("cmd /c start cmd.exe /K \" " + os.path.dirname(path)[0:2] + " &&  cd \"" + os.path.dirname(path) + "\" && \"" + os.getcwd() + "\\Python\\python.exe\" \"" + path + "\" && echo. && title PyEssential IDE && pause && exit || echo. && title PyEssential IDE && pause && exit \"")
+    subprocess.Popen("cmd /c start cmd.exe /K \" " + os.path.dirname(path)[0:2] + " &&  cd \"" + os.path.dirname(path) + "\" && \"" + os.getcwd() + "\\Python\\python.exe\" \"" + path + "\" && echo. && title PyEssential IDE && pause && exit || echo. && title PyEssential IDE && pause && exit \"", shell=True)
 
 
 def update_status_bar(event=""):
@@ -374,7 +376,6 @@ editor.bind("<Control-g>", search)
 editor.bind("<Control-t>", counts)
 editor.bind("<Control-d>", time_date)
 editor.bind("<Tab>", tab)
-
 editor.bind("<Control-b>", build_run)
 
 root.bind("<Key>", update_status_bar)
@@ -393,7 +394,6 @@ hscroll['width'] = 0
 # Menu
 
 m = Menu(root)
-
 root.config(menu=m)
 
 fm = Menu(m, tearoff=0)

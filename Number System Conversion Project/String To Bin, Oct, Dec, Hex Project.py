@@ -31,6 +31,16 @@ def process(event=""):
     display.delete(0.0, END)
     display.insert(END, string.rstrip())
 
+
+def copies_to_clipboard():
+    ent.clipboard_clear()
+    ent.clipboard_append(display.get(1.0, END))
+
+
+def clipboard_paste():
+    ent.delete(0, END)
+    ent.insert(INSERT, str(ent.clipboard_get()))
+
 # Heading
 
 
@@ -43,6 +53,11 @@ ent = Entry(root, font="Verdana 16")
 ent.focus()
 ent.bind("<Return>", process)
 ent.pack(expand=TRUE, fill=BOTH)
+
+# Paste Button
+
+pst_btn = Button(root, text="Clipboard Paste", fg="white", bg="gray", command=clipboard_paste)
+pst_btn.pack()
 
 # Radio Buttons
 
@@ -68,12 +83,17 @@ space.pack()
 
 # Process Button
 
-btn = Button(root, text="Process", fg="white", bg="gray", command=process)
+btn = Button(root, text="Process", fg="white", bg="black", command=process)
 btn.pack()
 
 # Output Display Text
 
 display = Text(root, fg="#dadce0", bg="#35363a", font="Verdana 12", wrap="word", insertbackground="#dadce0")
 display.pack(expand=TRUE, fill=BOTH)
+
+# Copy Button
+
+cpy_btn = Button(root, text="Copy Answer", fg="white", bg="gray", command=copies_to_clipboard)
+cpy_btn.pack()
 
 root.mainloop()

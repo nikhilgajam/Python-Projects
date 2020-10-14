@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 
 root = Tk()
-root.geometry("750x560")
+root.geometry("750x590")
 root.iconbitmap(True, "images/icon.ico")
 root.title("Bin, Oct, Hex To String")
 
@@ -36,6 +36,17 @@ def process(event=""):
         display.delete(0.0, END)
         messagebox.showerror("Error", "Select Correct Type Of Number System")
 
+
+def copies_to_clipboard():
+    ent.clipboard_clear()
+    ent.clipboard_append(display.get(1.0, END))
+
+
+def clipboard_paste():
+    ent.delete(1.0, END)
+    ent.insert(INSERT, str(ent.clipboard_get()))
+
+
 # Heading
 
 
@@ -48,6 +59,11 @@ ent = Text(root, fg="#dadce0", bg="#35363a", font="Verdana 16", wrap="word", ins
 ent.focus()
 ent.bind("<Return>", process)
 ent.pack(expand=TRUE, fill=BOTH)
+
+# Paste Button
+
+pst_btn = Button(root, text="Clipboard Paste", fg="white", bg="gray", command=clipboard_paste)
+pst_btn.pack()
 
 # Radio Buttons
 
@@ -73,12 +89,17 @@ space.pack()
 
 # Process Button
 
-btn = Button(root, text="Process", fg="white", bg="gray", command=process)
+btn = Button(root, text="Process", fg="white", bg="black", command=process)
 btn.pack()
 
 # Output Display Text
 
 display = Text(root, fg="#dadce0", bg="#35363a", font="Verdana 12", wrap="word", insertbackground="#dadce0", height=11)
 display.pack(expand=TRUE, fill=BOTH)
+
+# Copy Button
+
+cpy_btn = Button(root, text="Copy Answer", fg="white", bg="gray", command=copies_to_clipboard)
+cpy_btn.pack()
 
 root.mainloop()

@@ -21,11 +21,11 @@ def evaluate(event=""):
     ent.focus()
 
     try:
-        num1 = random.randint(0, int(range_num.get())+1)
-        num2 = random.randint(0, int(range_num.get())+1)
+        num1 = random.randint(0, int(range_num.get()))
+        num2 = random.randint(1, int(range_num.get()))
 
         sym = random.choice(symbols)
-        
+
         question['text'] = str(num1) + " " + sym + " " + str(num2) + " = "
 
         if sym == '+':
@@ -38,21 +38,21 @@ def evaluate(event=""):
             ans = num1 * num2
 
         elif sym == '/':
-            if num2 == 0:
-                evaluate()
             ans = num1 / num2
             ans = "%.2f" % ans
             if float(ans) == int(float(ans)):
                 ans = int(float(ans))
 
         elif sym == '%':
-            if num2 == 0:
-                evaluate()
             ans = num1 % num2
 
         elif sym == '^':
-            num1 = random.randint(1, 9)
-            num2 = random.randint(1, 9)
+            if int(range_num.get()) < 10:
+                x = int(range_num.get())
+            else:
+                x = 9
+            num1 = random.randint(1, x)
+            num2 = random.randint(1, x)
             question['text'] = str(num1) + " " + sym + " " + str(num2) + " = "
             ans = num1 ** num2
 
@@ -66,25 +66,28 @@ def answer(event=""):
     if str(ans) == ent.get():
         c += 1
         score['text'] = "Correct : " + str(c) + " \t\t Mistake : " + str(m) + "\n"
-        #playsound.playsound("sounds/correct.mp3")
+        # playsound.playsound("sounds/correct.mp3")
         t = threading.Thread(target=sounds, args=(1,))
         t.start()
     else:
         m += 1
         score['text'] = "Correct : " + str(c) + " \t\t Mistake : " + str(m) + "\n"
-        #playsound.playsound("sounds/mistake.mp3")
+        # playsound.playsound("sounds/mistake.mp3")
         t = threading.Thread(target=sounds, args=(0,))
         t.start()
 
     ans_lbl['text'] = "\n" + str(num1) + " " + str(sym) + " " + str(num2) + " = " + str(ans)
     ent.delete(0, END)
+    # Displaying New Question
     evaluate()
+
 
 def sounds(x):
     if x == 1:
         playsound.playsound("sounds/correct.mp3")
     else:
         playsound.playsound("sounds/mistake.mp3")
+
 
 def helps():
     top = Toplevel()

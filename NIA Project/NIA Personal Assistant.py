@@ -3,15 +3,25 @@ from tkinter import messagebox
 from tkinter.font import Font
 from tkinter import ttk
 import wolframalpha
+import webbrowser
 import requests
 import playsound
 import threading
 import wikipedia
 import time
 
+# Window
+
 root = Tk()
 root.title("NIA")
 root.iconbitmap(True, "images/icon.ico")
+
+# Search list
+
+search_list = []
+search_count = 0
+
+# Operations
 
 
 def ask_pressed(event=""):
@@ -21,9 +31,18 @@ def ask_pressed(event=""):
 
 
 def ask(string):
+    global search_list, search_count
+    search_list.append(string)
     string = string.lower()
 
-    if 'hello' in string:
+    if 'search' in string:
+        string = string.replace("search", "")
+        threading.Thread(target=sounds, args=("sounds/web.mp3", )).start()
+        display.insert(END, "\n Redirecting your query to a web browser.")
+        display.yview(END)
+        webbrowser.open('https://www.google.com/search?q=' + string)
+
+    elif 'hello' in string:
         display.insert(END, "\n " + "Hey. How can I help you?")
 
     elif 'hey' in string:
@@ -33,7 +52,7 @@ def ask(string):
         display.insert(END, "\n " + "NIA is a Personal Assistant Created By Nikhil")
         
     elif string == '':
-        display.insert(END, "\n " + "Try to type a question or name or anything")
+        display.insert(END, "\n " + "Try to type a question or name or anything.")
         threading.Thread(target=sounds, args=("sounds/type.mp3", )).start()
 
     elif 'date' in string:
@@ -98,9 +117,11 @@ def ask(string):
             threading.Thread(target=sounds, args=("sounds/retry.mp3", )).start()
 
     else:
+        # This will search the wolfram alpha if not found then searches on wikipedia after that searches on google
         threading.Thread(target=internet_search, args=(str(string), )).start()
 
     ques.delete(0, END)
+    search_count = 0
 
 
 def internet_search(string):
@@ -117,11 +138,24 @@ def internet_search(string):
         try:
             data = wikipedia.summary(string, sentences=3)
             display.insert(END, "\n " + str(data))
+            display.insert(END, "\n\nIf this answer is not acceptable try placing 'search' in front of the query.\nEx: search Nikhil Tech")
             display.yview(END)
         except Exception:
-            display.insert(END, "\n There's a problem with keyword or internet connection. Please retry.")
+            threading.Thread(target=sounds, args=("sounds/web.mp3", )).start()
+            display.insert(END, "\n Redirecting your query to a web browser.")
             display.yview(END)
-            threading.Thread(target=sounds, args=("sounds/retry.mp3", )).start()
+            webbrowser.open('https://www.google.com/search?q=' + string)
+
+
+def search_track(event=""):
+    global search_list, search_count
+    print(search_count, search_list)
+    try:
+        ques.delete(0, END)
+        search_count = search_count - 1
+        ques.insert(0, search_list[search_count])
+    except Exception:
+        pass
 
 
 def sounds(source):
@@ -158,6 +192,8 @@ pic = PhotoImage(file="images/artificial-intelligence.png")
 image = Label(image=pic)
 image.pack()
 
+# Text type
+
 types = Font(family="Lucida Console")
 
 # Data Display
@@ -171,8 +207,9 @@ box.pack()
 
 # Question Box
 
-ques = ttk.Entry(box, width=120)
+ques = Entry(box, font=types, width=80)
 ques.bind("<Return>", ask_pressed)
+ques.bind("<Up>", search_track)
 ques.grid(row=0, column=0, padx=3)
 ques.focus()
 
@@ -180,6 +217,8 @@ ques.focus()
 
 ask_btn = ttk.Button(box, text="Ask", command=ask_pressed)
 ask_btn.grid(row=0, column=1, padx=3, pady=6)
+
+# Welcome string with sound
 
 display.insert(END, ">>> Hey there. I'm NIA (Nikhil's Assistant). How can I help you?")
 threading.Thread(target=sounds, args=("sounds/greeting.mp3", )).start()

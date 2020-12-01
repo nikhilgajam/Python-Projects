@@ -2,13 +2,16 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter.font import Font
 from tkinter import ttk
+import urllib.request
 import wolframalpha
 import webbrowser
 import requests
+import calendar
 import playsound
 import threading
 import wikipedia
 import time
+import os
 
 # Window
 
@@ -20,6 +23,7 @@ root.iconbitmap(True, "images/icon.ico")
 
 search_list = []
 search_count = 0
+check = None
 
 # Operations
 
@@ -33,35 +37,56 @@ def ask_pressed(event=""):
 def ask(string):
     global search_list, search_count
     search_list.append(string)
-    string = string.lower()
+    string = string.strip().lower()
 
-    if 'search' in string:
+    if string.startswith("search"):
         string = string.replace("search", "")
         threading.Thread(target=sounds, args=("sounds/web.mp3", )).start()
         display.insert(END, "\n Redirecting your query to a web browser.")
         display.yview(END)
         webbrowser.open('https://www.google.com/search?q=' + string)
 
-    elif 'hello' in string:
+    elif string.startswith('hello'):
         display.insert(END, "\n " + "Hey. How can I help you?")
 
-    elif 'hey' in string:
+    elif string.startswith('hey'):
         display.insert(END, "\n " + "Hello. How can I help you?")
 
-    elif 'nia' in string:
+    elif string.startswith('hi'):
+        display.insert(END, "\n " + "Hello. How can I help you?")
+
+    elif string.startswith('nia') or string.endswith('nia'):
         display.insert(END, "\n " + "NIA is a Personal Assistant Created By Nikhil")
+
+    elif string.endswith('your name'):
+        display.insert(END, "\n " + "I am NIA.")
+
+    elif string.startswith('open'):
+        temp = string.replace("open ", "")
+        try:
+            os.startfile(temp)
+            del temp
+            display.insert(END, "\n " + "Done.")
+        except Exception:
+            internet_search(string)
         
     elif string == '':
         display.insert(END, "\n " + "Try to type a question or name or anything.")
         threading.Thread(target=sounds, args=("sounds/type.mp3", )).start()
 
-    elif 'date' in string:
+    elif string.startswith('date') or string.endswith('date'):
         threading.Thread(target=sounds, args=("sounds/date.mp3", )).start()
         t = time.ctime()
         t = t[:10] + "," + t[19:]
         display.insert(END, "\n " + str(t))
 
     elif 'time in' in string:
+        if check is None:
+            display.insert(END, "\n There's a problem with internet connection. Please retry.")
+            display.yview(END)
+            threading.Thread(target=sounds, args=("sounds/retry.mp3", )).start()
+            return
+
         threading.Thread(target=sounds, args=("sounds/searching.mp3", )).start()
         client = wolframalpha.Client("U4L9E5-8RHX97YV24")
         res = client.query(string)
@@ -70,8 +95,9 @@ def ask(string):
             raise Exception
         display.insert(END, "\n " + str(data))
         display.yview(END)
+        threading.Thread(target=internet_check, args=()).start()
 
-    elif 'time' in string:
+    elif string.endswith('time') or string.endswith('time now'):
         threading.Thread(target=sounds, args=("sounds/time.mp3", )).start()
         t = time.ctime()
         change = int(t[11:13]) % 12
@@ -80,13 +106,30 @@ def ask(string):
         t = t[0:11] + temp
         display.insert(END, "\n " + str(t))
 
-    elif 'weather' in string:
+    elif string == 'calendar':
+        t = time.ctime()
+        t = t[:10] + "," + t[19:]
+        months = {"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6, "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12}
+        display.insert(END, "\n" + calendar.month(int(t[-4:]), int(months[t[4:7].strip()])))
+        display.insert(END, "\n" + str(t))
+        display.yview(END)
+
+    elif string.startswith('weather'):
+        temp = string
         string = string.split(" ")
+
+        if check is None:
+            display.insert(END, "\n There's a problem with internet connection. Please retry.")
+            display.yview(END)
+            threading.Thread(target=sounds, args=("sounds/retry.mp3", )).start()
+            return
+
+        # We can also do this with string.replace("weather in", "")
+
         try:
             city = string[string.index('in') + 1]
             if len(string) - 1 > string.index('in') + 2:
                 city = string[string.index('in') + 1] + " " + string[string.index('in') + 2] + " " + string[string.index('in') + 3]
-                print(city)
             elif len(string) - 1 > string.index('in') + 1:
                 city = string[string.index('in') + 1] + " " + string[string.index('in') + 2]
         except Exception:
@@ -112,9 +155,16 @@ def ask(string):
             threading.Thread(target=sounds, args=("sounds/weather.mp3", )).start()
             display.insert(END, "\n " + str(info))
         except Exception:
-            display.insert(END, "\n There's a problem with keyword or internet connection. Please retry.")
-            display.yview(END)
-            threading.Thread(target=sounds, args=("sounds/retry.mp3", )).start()
+            internet_search(temp)
+
+    elif string == 'help':
+        display.insert(END, "\n" + " weather <city-name> - Displays weather data in a particular city\n"
+                                   " search  <keyword>   - Redirects your query to a web browser\n"
+                                   " calr                - Displays this month's calendar\n"
+                                   " date                - Displays today's date\n"
+                                   " time                - Displays time\n\n"
+                                   " Any string which doesn't have any above command is taken as a Search Query.")
+        display.yview(END)
 
     else:
         # This will search the wolfram alpha if not found then searches on wikipedia after that searches on google
@@ -125,6 +175,8 @@ def ask(string):
 
 
 def internet_search(string):
+    if check is None:
+        return
     try:
         threading.Thread(target=sounds, args=("sounds/searching.mp3", )).start()
         client = wolframalpha.Client("U4L9E5-8RHX97YV24")
@@ -146,10 +198,23 @@ def internet_search(string):
             display.yview(END)
             webbrowser.open('https://www.google.com/search?q=' + string)
 
+    threading.Thread(target=internet_check, args=()).start()
+
+
+def internet_check():
+    global check
+    try:
+        urllib.request.urlopen("https://google.com")
+        check = True
+    except Exception:
+        display.insert(END, "\n There's a problem with internet connection. Please retry.")
+        display.yview(END)
+        threading.Thread(target=sounds, args=("sounds/retry.mp3", )).start()
+        check = None
+
 
 def search_track(event=""):
     global search_list, search_count
-    print(search_count, search_list)
     try:
         ques.delete(0, END)
         search_count = search_count - 1
@@ -222,6 +287,7 @@ ask_btn.grid(row=0, column=1, padx=3, pady=6)
 
 display.insert(END, ">>> Hey there. I'm NIA (Nikhil's Assistant). How can I help you?")
 threading.Thread(target=sounds, args=("sounds/greeting.mp3", )).start()
+threading.Thread(target=internet_check, args=()).start()
 
 # Popup Menu
 

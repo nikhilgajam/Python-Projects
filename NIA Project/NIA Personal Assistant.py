@@ -23,6 +23,9 @@ root.iconbitmap(True, "images/icon.ico")
 
 search_list = []
 search_count = 0
+
+# Internet check variable
+
 check = None
 
 
@@ -35,13 +38,15 @@ def ask_pressed(event=""):
     display.yview(END)
     ask(str(ques.get()))
     display['state'] = DISABLED
-    print(threading.active_count())
+    # print(threading.active_count())
 
 
 def ask(string):
     global search_list, search_count, check
+
     # Search record
     search_list.append(string)
+
     # Cleaning the input string
     string = string.strip().lower()
 
@@ -90,22 +95,7 @@ def ask(string):
         display.insert(END, "\n " + str(t))
 
     elif 'time in' in string:
-        if check is None:
-            display.insert(END, "\n There's a problem with internet connection. Please retry.")
-            display.yview(END)
-            threading.Thread(target=sounds, args=("sounds/retry.mp3",)).start()
-            threading.Thread(target=internet_check, args=()).start()
-            return
-
-        threading.Thread(target=sounds, args=("sounds/searching.mp3",)).start()
-        client = wolframalpha.Client("U4L9E5-8RHX97YV24")
-        res = client.query(string)
-        data = next(res.results).text
-        if data == '(no data available)' or data == '(data not available)':
-            raise Exception
-        display.insert(END, "\n " + str(data))
-        display.yview(END)
-        threading.Thread(target=internet_check, args=()).start()
+        threading.Thread(target=internet_search, args=(str(string),)).start()
 
     elif string.endswith('time') or string.endswith('time now'):
         threading.Thread(target=sounds, args=("sounds/time.mp3",)).start()
@@ -167,7 +157,7 @@ def internet_search(string):
         # Searches on wolfram alpha
         threading.Thread(target=sounds, args=("sounds/searching.mp3",)).start()
         client = wolframalpha.Client("U4L9E5-8RHX97YV24")
-        res = client.query(string)
+        res = client.query(str(string))
         data = next(res.results).text
         if data == '(no data available)' or data == '(data not available)':
             # If the answer is not found an exception is raised
@@ -179,7 +169,7 @@ def internet_search(string):
     except Exception:
         try:
             # Then searches on wikipedia
-            data = wikipedia.summary(string, sentences=3)
+            data = wikipedia.summary(str(string), sentences=3)
             display['state'] = NORMAL
             display.insert(END, "\n " + str(data))
             display.insert(END,
@@ -193,7 +183,7 @@ def internet_search(string):
             display.insert(END, "\n Redirecting your query to a web browser.")
             display.yview(END)
             display['state'] = DISABLED
-            webbrowser.open('https://www.google.com/search?q=' + string)
+            webbrowser.open('https://www.google.com/search?q=' + str(string))
 
     threading.Thread(target=internet_check, args=()).start()
 
@@ -252,6 +242,7 @@ def weather_data(string):
 
 def internet_check():
     global check
+
     try:
         urllib.request.urlopen("https://google.com")
         check = True
@@ -282,12 +273,6 @@ def copy():
     display.see(INSERT)
     display.clipboard_clear()
     display.clipboard_append(display.selection_get())
-
-
-def select_all():
-    display.tag_add(SEL, "1.0", END)
-    display.mark_set(INSERT, 1.0)
-    display.see(INSERT)
 
 
 def clicked(event=""):

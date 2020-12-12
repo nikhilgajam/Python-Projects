@@ -2,14 +2,16 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter.font import Font
 from tkinter import ttk
+from gtts import gTTS
 import urllib.request
 import wolframalpha
 import webbrowser
-import requests
-import calendar
 import playsound
 import threading
 import wikipedia
+import requests
+import calendar
+import shutil
 import time
 import os
 
@@ -72,8 +74,9 @@ def ask(string):
     elif string.startswith('nia'):
         display.insert(END, "\n " + "NIA is a Personal Assistant Created By Nikhil")
 
-    elif string.endswith('your name'):
+    elif string.endswith('your name') or string.endswith('your name?'):
         display.insert(END, "\n " + "I am NIA.")
+        threading.Thread(target=sounds, args=("sounds/nia.mp3",)).start()
 
     elif string.startswith('open'):
         temp = string.replace("open ", "")
@@ -117,21 +120,18 @@ def ask(string):
 
     elif 'weather' in string:
         if check is None:
-            display.insert(END, "\n There's a problem with internet connection. Please retry.")
-            display.yview(END)
-            threading.Thread(target=sounds, args=("sounds/retry.mp3",)).start()
-            threading.Thread(target=internet_check, args=()).start()
+            internet_issue()
             return
 
         threading.Thread(target=weather_data, args=(string,)).start()
 
     elif string == 'help':
-        display.insert(END, "\n" + " weather <city-name> - Displays weather data in a particular city\n"
-                                   " search  <keyword>   - Redirects your query to a web browser\n"
-                                   " open <app or file>  - Opens a specific app/file or website\n"
-                                   " calendar            - Displays this month's calendar\n"
-                                   " date                - Displays today's date\n"
-                                   " time                - Displays time\n\n"
+        display.insert(END, "\n" + " weather in <city-name> - Displays weather data in a particular city\n"
+                                   " search <keyword>       - Redirects your query to a web browser\n"
+                                   " open <app or file>     - Opens a specific app/file or website\n"
+                                   " calendar               - Displays this month's calendar\n"
+                                   " date                   - Displays today's date\n"
+                                   " time                   - Displays time\n\n"
                                    " Any string which doesn't have any above command is taken as a Search Query.")
         display.yview(END)
 
@@ -147,10 +147,7 @@ def ask(string):
 
 def internet_search(string):
     if check is None:
-        display.insert(END, "\n There's a problem with internet connection. Please retry.")
-        display.yview(END)
-        threading.Thread(target=sounds, args=("sounds/retry.mp3",)).start()
-        threading.Thread(target=internet_check, args=()).start()
+        internet_issue()
         return
 
     try:
@@ -166,18 +163,19 @@ def internet_search(string):
         display.insert(END, "\n " + str(data))
         display.yview(END)
         display['state'] = DISABLED
+        threading.Thread(target=string_to_speech, args=(str(data), )).start()
     except Exception:
         try:
             # Then searches on wikipedia
             data = wikipedia.summary(str(string), sentences=3)
             display['state'] = NORMAL
             display.insert(END, "\n " + str(data))
-            display.insert(END,
-                           "\n\nIf this answer is not acceptable try placing 'search' in front of the query.\nEx: search Nikhil Tech")
+            display.insert(END, "\n\nIf this answer is not acceptable try placing 'search' in front of the query.\nEx: search Nikhil Tech")
             display.yview(END)
             display['state'] = DISABLED
+            threading.Thread(target=sounds, args=("sounds/data.mp3",)).start()
         except Exception:
-            # When answer is not found on wikipedia then it open a web browser and searches on google
+            # When answer is not found on wikipedia then it will open a web browser and searches on google
             threading.Thread(target=sounds, args=("sounds/web.mp3",)).start()
             display['state'] = NORMAL
             display.insert(END, "\n Redirecting your query to a web browser.")
@@ -191,9 +189,7 @@ def internet_search(string):
 def weather_data(string):
     city = ""
     display['state'] = NORMAL
-
     # Cleaning the string to get weather data or weather help
-
     if string.startswith('weather in '):
         city = string.replace("weather in ", "")
     elif string.startswith("what's the weather"):
@@ -250,6 +246,15 @@ def internet_check():
         check = None
 
 
+def internet_issue():
+    display['state'] = NORMAL
+    display.insert(END, "\n There's a problem with internet connection. Please retry.")
+    display.yview(END)
+    display['state'] = DISABLED
+    threading.Thread(target=sounds, args=("sounds/retry.mp3",)).start()
+    threading.Thread(target=internet_check, args=()).start()
+
+
 def search_track(event=""):
     global search_list, search_count
 
@@ -261,6 +266,22 @@ def search_track(event=""):
         ques.insert(0, search_list[search_count])
     except Exception:
         pass
+
+
+def string_to_speech(string):
+    mp3 = gTTS(str(string))
+    string = search_list[-1].replace("*", "").replace("\\", "").replace("/", "").replace(":", "").replace("<", "").replace(">", "").replace("|", "")
+    mp3.save("sounds/temp/" + str(string) + str(search_list.count(string)) + ".mp3")
+    sounds("sounds/temp/" + str(string) + str(search_list.count(string)) + ".mp3")
+
+
+def close():
+    try:
+        shutil.rmtree("sounds/temp")
+    except Exception:
+        pass
+
+    root.destroy()
 
 
 def sounds(source):
@@ -334,6 +355,13 @@ display.insert(END, ">>> Hey there. I'm NIA (Nikhil's Assistant). How can I help
 threading.Thread(target=sounds, args=("sounds/greeting.mp3",)).start()
 display['state'] = DISABLED
 
+# Creating temp directory
+
+if os.path.isdir("sounds/temp"):
+    shutil.rmtree("sounds/temp")
+
+os.mkdir("sounds/temp")
+
 # Internet Check
 
 threading.Thread(target=internet_check, args=()).start()
@@ -348,4 +376,5 @@ popup_menu.add_command(label="Help", command=helps)
 popup_menu.add_separator()
 popup_menu.add_command(label="About", command=about)
 
+root.protocol("WM_DELETE_WINDOW", close)
 root.mainloop()

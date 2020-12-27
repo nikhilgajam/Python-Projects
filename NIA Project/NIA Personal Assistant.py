@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
+from datetime import datetime
 from tkinter.font import Font
 from tkinter import ttk
 from gtts import gTTS
@@ -351,8 +352,21 @@ ask_btn.grid(row=0, column=1, padx=3, pady=6)
 
 # Welcome string with sound
 
-display.insert(END, ">>> Hey there. I'm NIA (Nikhil's Assistant). How can I help you?")
-threading.Thread(target=sounds, args=("sounds/greeting.mp3",)).start()
+if 5 <= int(datetime.today().hour) < 12:
+    display.insert(END, ">>> Good Morning. I'm NIA (Nikhil's Assistant). How can I help you?")
+    threading.Thread(target=sounds, args=("sounds/greetings/morning.mp3",)).start()
+elif 12 <= int(datetime.today().hour) <= 16:
+    display.insert(END, ">>> Good Afternoon. I'm NIA (Nikhil's Assistant). How can I help you?")
+    threading.Thread(target=sounds, args=("sounds/greetings/afternoon.mp3",)).start()
+elif 17 <= int(datetime.today().hour) < 24:
+    display.insert(END, ">>> Good Evening. I'm NIA (Nikhil's Assistant). How can I help you?")
+    threading.Thread(target=sounds, args=("sounds/greetings/evening.mp3",)).start()
+else:
+    display.insert(END, ">>> Hey There. I'm NIA (Nikhil's Assistant). How can I help you?")
+    threading.Thread(target=sounds, args=("sounds/greetings/greeting.mp3",)).start()
+    
+# Stops the user to type on the display
+
 display['state'] = DISABLED
 
 # Creating temp directory

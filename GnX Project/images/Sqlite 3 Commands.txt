@@ -1,0 +1,24 @@
+DATA BASE COMMANDS (SQLITE 3)
+
+
+
+
+When You Are Executing Multiple Commands Use ; At End Executing One Command Doesn't Need ;
+
+
+
+CREATE TABLE Data (Name TEXT, Email TEXT) // Create
+
+SELECT * FROM Data                        // Select All
+
+INSERT INTO Data (Name, Email) VALUES ("HELLO WORLD", "helloworld@gmail.com")
+
+UPDATE Users SET Name = "Hello World" WHERE Name = "HELLO WORLD"
+
+SELECT * FROM Data ORDER BY Name       // Ascending
+
+SELECT * FROM Data ORDER BY Email
+
+SELECT * FROM Data ORDER BY Name DESC  // Descending
+
+DROP TABLE Data                        // Delete

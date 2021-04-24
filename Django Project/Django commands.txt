@@ -1,0 +1,25 @@
+# To start a new project
+django-admin startproject projectname
+
+# To run the server
+python manage.py runserver
+
+# To migrate
+python manage.py migrate
+
+# To create superuser
+python manage.py createsuperuser
+
+# To create an app
+python manage.py startapp appname
+
+# Restart the django server if you have any problems
+
+# In urls.py we can keep the urls which will be opened when we type or click
+# In views.py we can keep all the webpages
+# In models.py we can create databases 
+# And we need to run "python manage.py makemigrations" and python manage.py migrate" after creating a class in models.py and add admin.site.register(Object name after importing) in admin.py
+# If you have any errors with database then delete db.sqlite3 and 0001_initial.py
+
+
+

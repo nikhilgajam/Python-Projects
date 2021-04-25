@@ -28,7 +28,6 @@ update()
 root.mainloop()
 
 
-
 '''
 
 
@@ -70,6 +69,7 @@ def ok():
     global var
     var = False
     sys.exit()
+
 
 t1 = threading.Thread(target=time_thing, args=())
 t1.start()

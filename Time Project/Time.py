@@ -27,6 +27,8 @@ update()
 
 root.mainloop()
 
+
+
 '''
 
 # TIME WITH THREADING (SOMETIMES IT MAY CRASH WHEN YOU TRY TO CLOSE THE WINDOW)
@@ -75,4 +77,3 @@ root.mainloop()
 
 
 '''
-

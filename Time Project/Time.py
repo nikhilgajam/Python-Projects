@@ -10,8 +10,8 @@ def update():
     # To know about different directives
     time_label['text'] = time_str
 
-    day_str = time.strftime("%A\n%B %d, %Y")
-    day_label['text'] = day_str
+    day_date_str = time.strftime("%A\n%B %d, %Y")
+    day_date_label['text'] = day_date_str
 
     # After method is defined in root window and label classes and it takes time in milliseconds and function
     root.after(1000, update)
@@ -20,8 +20,8 @@ def update():
 time_label = Label(root, font=('Bell MT', 60), fg='#dadce0', bg='#35363a')
 time_label.pack(fill=BOTH, expand=TRUE)
 
-day_label = Label(root, font=('Bell MT', 40))
-day_label.pack(fill=BOTH, expand=TRUE)
+day_date_label = Label(root, font=('Bell MT', 40))
+day_date_label.pack(fill=BOTH, expand=TRUE)
 
 update()
 

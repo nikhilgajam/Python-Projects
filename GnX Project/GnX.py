@@ -7,7 +7,7 @@ import random
 import os
 
 
-# Storage
+# Stores user name
 UN = ""
 
 
@@ -30,9 +30,11 @@ def sign_ver(event=""):
 
         try:
             get = connect.execute("SELECT * FROM Users").fetchall()
-        except:
+        except Exception as e:
             messagebox.showerror("Error", "Sign Up To Create An Account")
+            print(e)
             return
+
         ok = False
         for i, j in get:
             if i == un_box.get() and j == pw_box.get():
@@ -51,9 +53,10 @@ def sign_ver(event=""):
             connect.execute("CREATE TABLE IF NOT EXISTS Users(un TEXT PRIMARY KEY, pw TEXT)")
             connect.execute("INSERT INTO Users(un, pw) VALUES (?, ?)", (un_box.get(), pw_box.get()))
             connect.commit()
-        except:
+        except Exception as e:
             messagebox.showwarning("Warning", "This Username Already Exists Use Another")
             connect.close()
+            print(e)
             return
 
         sign_in.invoke()
@@ -74,8 +77,16 @@ def account():
     connect.execute("CREATE TABLE IF NOT EXISTS {}(un TEXT PRIMARY KEY, pw TEXT)".format(UN))
 
     # Command
+    def show_all():
+        get = connect.execute("SELECT * FROM {}".format(UN))
+        for i, j in get:
+            if i is None or j is None:
+                continue
+                # If i or j is None then it causes error that's why we are avoiding those nones
+            text.insert(END, i + " | " + j + "\n")
+
     def saves(event=""):
-        name = u_box.get()
+        name = una_box.get()
         if name == "":
             messagebox.showerror("Error", "Enter A Name Or Website Or Username")
             return
@@ -88,7 +99,7 @@ def account():
             return
 
         # Calling password generator
-        g = generator(s_box.get())
+        g = generator(size_box.get())
 
         # If generator returns None then we need to terminate this saves
         if g is None:
@@ -97,11 +108,30 @@ def account():
         try:
             connect.execute("INSERT INTO {}(un, pw) VALUES ('{}', '{}')".format(UN, name, str(g)))
             connect.commit()
-        except:
+        except Exception as e:
             messagebox.showerror("Error", "This Username Or Website Name Already Exists Use Another")
+            print(e)
             return
 
-        text.insert(END, u_box.get() + " | " + str(g) + "\n")
+        text.insert(END, una_box.get() + " | " + str(g) + "\n")
+        una_box.focus()
+        una_box.delete(0, END)
+
+    def deletes():
+        name = una_box.get()
+        try:
+            connect.execute("DELETE FROM {} WHERE un ='{}'".format(UN, name))
+            connect.commit()
+        except Exception as e:
+            messagebox.showerror("Error", "Username You Entered Does Not Exist")
+            print(e)
+            return
+
+        text.delete(1.0, END)
+        una_box.delete(0, END)
+        una_box.focus()
+        text.insert(1.0, "Username | Password\n" + "="*19 + "\n")
+        show_all()
 
     # Text
     vscroll = Scrollbar(win, orient=VERTICAL)
@@ -111,15 +141,10 @@ def account():
     vscroll.config(command=text.yview)
 
     # Starting Message
-    text.insert(1.0, "Username | Password\n")
+    text.insert(1.0, "Username | Password\n" + "="*19 + "\n")
 
     # Inserts the content from database to text box
-    get = connect.execute("SELECT * FROM {}".format(UN))
-    for i, j in get:
-        if i is None or j is None:
-            continue
-            # If i or j is None then it causes error that's why we are avoiding those nones
-        text.insert(END, i + " | " + j + "\n")
+    show_all()
 
     boxes = Frame(win)
     boxes.pack()
@@ -128,23 +153,27 @@ def account():
     u = ttk.Label(boxes, text="Username: ")
     u.grid(row=0, column=0, padx=10)
 
-    u_box = ttk.Entry(boxes)
-    u_box.focus()
-    u_box.grid(row=0, column=1, padx=10, pady=6)
-    u_box.bind("<Return>", saves)
+    una_box = ttk.Entry(boxes)
+    una_box.focus()
+    una_box.grid(row=0, column=1, padx=10, pady=6)
+    una_box.bind("<Return>", saves)
 
     # Size
-    s = ttk.Label(boxes, text="Size (8-70): ")
-    s.grid(row=0, column=2, padx=10)
+    size_label = ttk.Label(boxes, text="Size (8-70): ")
+    size_label.grid(row=0, column=2, padx=10)
 
-    s_box = ttk.Entry(boxes)
-    s_box.insert(0, "8")
-    s_box.grid(row=0, column=3, padx=10)
-    s_box.bind("<Return>", saves)
+    size_box = ttk.Entry(boxes)
+    size_box.insert(0, "8")
+    size_box.grid(row=0, column=3, padx=10)
+    size_box.bind("<Return>", saves)
 
     # Save Button
-    save = ttk.Button(boxes, text="Save", command=saves)
-    save.grid(row=0, column=4)
+    save_btn = ttk.Button(boxes, text="Save", command=saves)
+    save_btn.grid(row=0, column=4, padx=6)
+
+    # Delete Button
+    delete_btn = ttk.Button(boxes, text="Delete", command=deletes)
+    delete_btn.grid(row=0, column=5)
 
     win.mainloop()
     # Closing the database connection
@@ -224,6 +253,7 @@ pw_box.bind("<Return>", sign_ver)
 
 confirm = ttk.Button(root, text="Confirm", command=sign_ver)
 confirm.pack(pady=11)
+confirm.bind('<Return>', sign_ver)
 
 # RadioButton Variable
 

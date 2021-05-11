@@ -21,7 +21,8 @@ def search():
     def save_as(event=""):
         path = filedialog.asksaveasfilename(initialfile="Search Anything.txt", defaultextension=".txt", filetype=(("Text Document", "*.txt"), ("All Files", "*.*")))
         with open(path, "w", encoding="utf8") as p:
-            p.write(str(data))
+            p.write(">>> " + str(title) + " <<<\n\n" + str(data))
+            # Writing with same title and data
 
     def popup(event):
         popup_menu.post(event.x_root, event.y_root)    # Popup menu
@@ -43,7 +44,7 @@ def search():
         text.see(INSERT)
 
     def randoms(event="", ch=1):
-        text.config(cursor="exchange")
+        text.config(cursor="xterm")
         e1.delete(0, END)
         e1.insert(0, random_name)
         new_thread()
@@ -52,6 +53,7 @@ def search():
         webbrowser.open("https://youtube.com/nikhiltech")
         tm.showinfo("About Us", "This Code Is Written By Nikhil")
 
+    # Data window
     sear = Toplevel()
     sear.title("Data")
     sear.geometry("752x457")
@@ -125,16 +127,24 @@ def search():
     e1.config(cursor="watch")
     b1.config(cursor="watch")
 
+    ask = ""
+
     try:
 
+        wiki_page = None
         ask = e1.get()
 
         if ask == "Type Anything Here":
-            data = "You Can Type Anything In This Box And Get Answers\nClear The Words Which Are Entered In Type Anything Box By Using Backspace Key\nCheck Your Internet Connection Because Without Internet This Program Will Not Work"
+            data = "You Can Type Anything In This Box And Get Answers\n" \
+                   "Clear The Words Which Are Entered In Type Anything Box By Using Backspace Key\n" \
+                   "Check Your Internet Connection Because Without Internet This Program Will Not Work"
         elif ask == "Nikhil Tech":
-            data = "Nikhil Tech is a youtube channel created by Nikhil\nYou can go to that channel by clicking About Us and then About Creator\nAlso you can type https://www.youtube.com/NikhilTech to go to Nikhil Tech Youtube Channel"
+            data = "Nikhil Tech is a youtube channel created by Nikhil\n" \
+                   "You can go to that channel by clicking About Us and then About Creator\n" \
+                   "Also you can type https://www.youtube.com/NikhilTech to go to Nikhil Tech Youtube Channel"
         else:
-            data = wikipedia.page(ask).content
+            wiki_page = wikipedia.page(ask, auto_suggest=False)
+            data = wiki_page.content
 
         # Random Wikipedia Suggestion
 
@@ -142,8 +152,6 @@ def search():
             random_name = "Nikhil Tech"
         else:
             random_name = wikipedia.random()
-
-        sear.deiconify()
 
         # Data insertion
 
@@ -153,27 +161,46 @@ def search():
             pass
         else:
             text.insert(END, "\nRandom Suggestion :  " + random_name)
+
         text.insert(END, "\n\n")
         if ask == "Type Anything Here":
-            text.insert(END, ">>>  " + ask + "  <<<\n\n" + data)
+            title = ask
+            text.insert(END, ">>>  " + title + "  <<<\n\n" + data)
         elif ask == "Nikhil Tech":
-            text.insert(END, ">>>  " + ask + "  <<<\n\n" + data)
+            title = ask
+            text.insert(END, ">>>  " + title + "  <<<\n\n" + data)
         else:
-            text.insert(END, ">>>  " + wikipedia.page(ask).title + "  <<<\n\n" + data)
+            title = wiki_page.title
+            text.insert(END, ">>>  " + title + "  <<<\n\n" + data)
 
+        # Changing the cursor img
         sear.config(cursor="arrow")
-        text.config(cursor="arrow")
+        text.config(cursor="xterm")   # text selector
         root.config(cursor="arrow")
         dp.config(cursor="arrow")
         e1.config(cursor="arrow")
         b1.config(cursor="arrow")
 
-    except:
+    except wikipedia.requests.exceptions.ConnectionError:
         sear.destroy()
-        tm.showerror("Problem", "Check Your Keyword And Internet Connection")
+        tm.showerror("Problem", "Check Your Internet Connection")
+
+    except Exception as e:
+        if str(e) == 'invalid command name ".!toplevel.!text"':
+            sear.destroy()
+            tm.showerror("Problem", "Don't Close The Window Wait Until You See The Data")
+        else:
+            sear.destroy()
+            if str(ask).islower():
+                tm.showerror("Problem", str(e))
+            else:
+                tm.showerror("Problem", "Try To Enter Small Letters(Lowercase) To Get Correct Answer\n" + str(e))
+
+    finally:
+        # Changing the cursor img
         root.config(cursor="arrow")
         dp.config(cursor="arrow")
-        e1.config(cursor="arrow")
+        e1.config(cursor="xterm")
         b1.config(cursor="arrow")
 
 

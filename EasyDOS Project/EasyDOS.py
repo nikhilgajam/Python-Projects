@@ -43,7 +43,7 @@ def open_dos_application():
 def open_dos_dir(event=""):
     path_str = str(dir_box.get())
 
-    # Checks whether path is valid or not
+    # Checking whether path is valid or not
     if not os.path.isdir(path_str):
         messagebox.showerror("Error", "Enter A Valid Directory")
         return

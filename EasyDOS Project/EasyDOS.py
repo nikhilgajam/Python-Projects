@@ -10,7 +10,7 @@ import threading
 root = Tk()
 root.title("EasyDOS")
 root.config(bg="#333333")
-root.geometry("400x454")
+root.geometry("400x456")
 root.iconbitmap(True, "images/icon.ico")
 
 # Dos application path
@@ -19,38 +19,42 @@ dos_app_path = ""
 
 # Commands
 def open_dos():
-    if var.get() == 0:
+    if screen_var.get() == 0:
         new_thread('DOSBox\\DOSBox.exe -noconsole')
-    elif var.get() == 1:
+    elif screen_var.get() == 1:
         new_thread('DOSBox\\DOSBox.exe -noconsole -fullscreen')
 
 
 def open_dos_application():
     global dos_app_path
     dos_app_path = filedialog.askopenfilename()
-    dos_app_path = str(dos_app_path).replace('/', '\\')
+    dos_app_path = str(dos_app_path).replace('/', '\\').lower()
 
     if dos_app_path == "":
-        messagebox.showerror("Error", "Select A Correct DOS Executable")
+        messagebox.showerror("Error", "Select A Correct DOS Executable With Extension (.exe) or (.com) or (.bat)")
         return
 
-    if var.get() == 0:
-        new_thread('DOSBox\\DOSBox.exe "{}" -exit -noconsole'.format(dos_app_path))
-    elif var.get() == 1:
-        new_thread('DOSBox\\DOSBox.exe "{}" -exit -noconsole -fullscreen'.format(dos_app_path))
+    if dos_app_path.find(".exe") > -1 or dos_app_path.find(".com") > -1 or dos_app_path.find(".bat") > -1:
+        if screen_var.get() == 0:
+            new_thread('DOSBox\\DOSBox.exe "{}" -exit -noconsole'.format(dos_app_path))
+        elif screen_var.get() == 1:
+            new_thread('DOSBox\\DOSBox.exe "{}" -exit -noconsole -fullscreen'.format(dos_app_path))
+    else:
+        messagebox.showerror("Error", "Select A Correct DOS Executable With Extension (.exe) or (.com) or (.bat)")
+        return
 
 
 def open_dos_dir(event=""):
-    path_str = str(dir_box.get())
+    path_str = str(dir_box.get()).replace('/', '\\')
 
-    # Checking whether path is valid or not
+    # Checks whether path is valid or not
     if not os.path.isdir(path_str):
         messagebox.showerror("Error", "Enter A Valid Directory")
         return
 
-    if var.get() == 0:
+    if screen_var.get() == 0:
         new_thread('DOSBox\\DOSBox.exe "{}" -noconsole'.format(path_str))
-    elif var.get() == 1:
+    elif screen_var.get() == 1:
         new_thread('DOSBox\\DOSBox.exe "{}" -noconsole -fullscreen'.format(path_str))
 
 
@@ -70,9 +74,9 @@ def helps():
     messagebox.showinfo("EasyDOS Help", "Default DOS Window Button : Will Open DOS With Default Directory.\n"
                                         "Load DOS Program Button: Will Open A Select Box To Run A DOS Program "
                                         "And That DOS Will Be Closed As Soon As You Quit The Program.\n"
-                                        "Directory Mount Box : When You Enter A Directory And Press Enter Key Then DOS "
-                                        "Will Get Opened In That Directory, Mounted As C: Drive.\n"
-                                        "Fullscreen And Windowed Mode Radio Buttons : Are Used To Run DOS In Fullscreen"
+                                        "Drive Mount Box : When You Paste A Path(CTRL + V) And Press Enter Key "
+                                        "Then DOS Will Get Opened In That Directory, Mounted As C: Drive.\n"
+                                        "Fullscreen And Windowed Mode Radio Buttons : Used To Run DOS In Fullscreen"
                                         " Or In A Window.")
 
 
@@ -91,9 +95,9 @@ def where_to():
 
 
 def script_help():
-    messagebox.showinfo("Where To Download DOS Programs", "To run many lines of DOS code then,\n"
-                                                          "You can create a .BAT file "
-                                                          "to execute many DOS commands at once")
+    messagebox.showinfo("How To Run Script", "To run many lines of DOS code then,\n"
+                                             "You can create a .BAT file "
+                                             "to execute many DOS commands at once.")
 
 
 def about_us():
@@ -122,17 +126,17 @@ open_dos_app_lbl.pack()
 dir_box = Entry(root, width=56, fg="#e6e8eb", bg="#993e1c")
 dir_box.bind("<Return>", open_dos_dir)
 dir_box.bind("<Button-1>", lambda e: dir_box.delete(0, END))
-dir_box.insert(0, "To Mount A Drive Type Directory Here And Press Enter Key")
+dir_box.insert(0, "To Mount A Drive, Paste The Path Here And Press Enter Key.")
 dir_box.pack(pady=25)
 
 # DOSBox fullscreen radio buttons
-var = IntVar()
+screen_var = IntVar()
 
-yes_fullscreen_rb = Radiobutton(root, variable=var, value=1, text="Fullscreen Mode", fg="#e6e8eb",
+yes_fullscreen_rb = Radiobutton(root, variable=screen_var, value=1, text="Fullscreen Mode", fg="#e6e8eb",
                                 bg="#333333", selectcolor="black", activebackground="gray")
 yes_fullscreen_rb.pack()
 
-no_fullscreen_rb = Radiobutton(root, variable=var, value=0, text="Windowed Mode", fg="#e6e8eb",
+no_fullscreen_rb = Radiobutton(root, variable=screen_var, value=0, text="Windowed Mode", fg="#e6e8eb",
                                bg="#333333", selectcolor="black", activebackground="gray")
 no_fullscreen_rb.invoke()
 no_fullscreen_rb.pack(pady=3)

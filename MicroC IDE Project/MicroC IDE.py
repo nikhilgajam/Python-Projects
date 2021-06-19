@@ -3,7 +3,6 @@ from tkinter import messagebox as tm
 from tkinter import filedialog
 from tkinter.font import Font
 from tkinter import simpledialog
-from datetime import datetime
 import subprocess
 import time
 import os
@@ -179,12 +178,7 @@ def close():
 
 def time_date(event=""):
 
-    c = time.ctime(time.time())
-    d = datetime.strptime(c[11:16], "%H:%M")
-    d = d.strftime("%I:%M %p")
-    d = d[:-3] + c[16:19] + d[5:]
-
-    time__date = " " + d + "  " + c[:4] + "- " + c[8:10] + "/" + c[4:7] + "/" + c[20:] + " "
+    time__date = time.strftime("%I:%M:%S %p %A - %d/%B/%Y")
     editor.insert(END, time__date)
 
 
@@ -256,10 +250,10 @@ def adjust_text_style():
     else:
         ask = str(ask)
         ask = ask.split(',')
-        tst['weight'] = ask[0].lower()
-        tst['slant'] = ask[1].lower()
-        tst['underline'] = int(ask[2])
-        tst['overstrike'] = int(ask[3])
+        tst['weight'] = ask[0].lower().strip()
+        tst['slant'] = ask[1].lower().strip()
+        tst['underline'] = int(ask[2].strip())
+        tst['overstrike'] = int(ask[3].strip())
 
         current_style = "Current :  " + ask[0].capitalize() + "," + ask[1].capitalize() + "," + ask[2] + "," + ask[3]
 
@@ -312,13 +306,8 @@ def set_status():
         tm.showinfo("MicroC IDE", "Restart MicroC IDE")
 
 
-def tab(event=""):
-    editor.insert(INSERT, " " * 4)
-    return 'break'
-
-
 def default_code(event=""):
-    editor.insert(END, "#include <stdio.h>\n\nint main(int argc, char *argv[]){\n\n    printf(\"Hello World\\n\");\n\n    return 0;\n\n}\n")
+    editor.insert(END, "#include <stdio.h>\n\nint main(int argc, char *argv[]){\n\n\tprintf(\"Hello World\\n\");\n\n\treturn 0;\n\n}\n")
 
 
 def build(event=""):
@@ -395,6 +384,9 @@ tst = Font(family="Lucida Console", size=text_size)
 # Text
 
 editor = Text(root, font=tst, wrap=NONE, undo=TRUE, xscrollcommand=hscroll.set, yscrollcommand=vscroll.set, foreground="#dadce0", background="#35363a", insertbackground="#dadce0")
+font = Font(font=editor['font'])
+tab_width = font.measure(' ' * 4)
+editor.config(tabs=(tab_width, ))
 
 editor.bind("<Button-3>", popup)  # Popup Menu Binding
 editor.bind("<Control-s>", save)
@@ -403,7 +395,6 @@ editor.bind("<Control-o>", opens)
 editor.bind("<Control-g>", search)
 editor.bind("<Control-t>", counts)
 editor.bind("<Control-d>", time_date)
-editor.bind("<Tab>", tab)
 editor.bind("<Control-b>", build)
 editor.bind("<Control-r>", run)
 editor.bind("<Control-m>", build_run)

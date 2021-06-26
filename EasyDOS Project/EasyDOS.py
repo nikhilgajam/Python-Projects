@@ -248,15 +248,15 @@ def program_manager(event=""):
 
 def helps():
     # This will open the help window
-    messagebox.showinfo("EasyDOS Help", "Program Manager Button : You Can Add Programs To Browse Box To Access"
+    messagebox.showinfo("EasyDOS Help", "Program Manager Button : You Can Add Programs To Browse Box To Access "
                                         "Them Later Quickly.\n"
                                         "Load DOS Program Button: Will Open A Select Box To Run A DOS Program "
                                         "And That DOS Will Be Closed As Soon As You Quit The Program.\n"
                                         "Default DOS Window Button : Will Open DOS With Default Directory.\n"
                                         "Drive Mount Box : When You Paste A Path(CTRL + V) And Press Enter Key "
                                         "Then DOS Will Get Opened In That Directory, Mounted As C: Drive.\n"
-                                        "Fullscreen And Windowed Mode Radio Buttons : Used To Run DOS In Fullscreen"
-                                        " Or In A Window.\n"
+                                        "Fullscreen And Windowed Mode Radio Buttons : Used To Run DOS In Fullscreen "
+                                        "Or In A Window.\n"
                                         "Settings Menu Button : With This You Can Change DOSBox Settings.")
 
 

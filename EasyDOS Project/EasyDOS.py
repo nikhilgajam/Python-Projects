@@ -82,6 +82,7 @@ def new_thread(path):
 def settings(event=""):
     # This is used to open the settings window
     top = Toplevel(root, bg="#333333")
+    top.title("EasyDOS Settings")
     top.resizable(0, 0)
     top.focus()
     top_title = Label(top, text="EasyDOS Settings", font=("Times New Roman", 40), fg="#e6e8eb", bg="#333333")
@@ -173,6 +174,13 @@ def program_manager(event=""):
         try:
             temp = str(list_box.get(ACTIVE))
             temp = str(c.execute('SELECT path FROM Data WHERE name = "{}"'.format(temp)).fetchall()[0][0])
+
+            # Checks whether path exists or not
+            if not os.path.exists(temp):
+                messagebox.showerror("Error", "Directory or file not found")
+                list_box.focus()
+                return
+
             if screen_var.get() == 0:
                 new_thread('DOSBox\\DOSBox.exe "{}" -noconsole'.format(temp))
             elif screen_var.get() == 1:
@@ -196,6 +204,7 @@ def program_manager(event=""):
 
     # Window settings
     top = Toplevel(root, bg="#333333")
+    top.title("EasyDOS Program Manager")
     top_title = Label(top, text="   Program Manager   ", font=("Times New Roman", 29), fg="#e6e8eb", bg="#333333")
     top_title.pack(pady=10, fill=BOTH)
     top.protocol("WM_DELETE_WINDOW", close)

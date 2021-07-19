@@ -7,6 +7,7 @@ import wikipedia
 import threading
 import time
 
+
 root = Tk()
 root.geometry("942x542")
 root.title("Search Anything")
@@ -47,6 +48,7 @@ def search():
         text.config(cursor="xterm")
         e1.delete(0, END)
         e1.insert(0, random_name)
+        
         new_thread()
 
     def about():

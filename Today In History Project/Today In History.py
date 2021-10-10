@@ -17,10 +17,12 @@ def joke_load():
         display.config(state=DISABLED)
 
         joke = str(req.urlopen("https://v2.jokeapi.dev/joke/Any?format=txt").read(), "utf-8")
+        
         display.config(state=NORMAL)
         display.insert(INSERT, "Joke:\n\n", "data_tag")
         display.insert(INSERT, joke + "\n\n\n")  # https://sv443.net/jokeapi/v2/
         display.config(state=DISABLED)
+        
     except Exception:
         messagebox.showerror("Error", "Check Your Internet Connection")
 
@@ -63,6 +65,7 @@ display.tag_config("data_tag", foreground="#dadce0")
 
 # Adding scroll bar to display
 scroll_bar.config(command=display.yview)
+
 # Displaying time on the display
 display.insert(INSERT, time.strftime("%A %B %d, %Y\n\n"))
 

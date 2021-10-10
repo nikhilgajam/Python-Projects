@@ -61,7 +61,9 @@ display = Text(root, fg="#fd910b", bg="#000000", font=("Lucida Console", 13), wr
 display.pack(expand=TRUE, fill=BOTH, padx=1, pady=1)
 display.tag_config("data_tag", foreground="#dadce0")
 
+# Adding scroll bar to display
 scroll_bar.config(command=display.yview)
+# Displaying time on the display
 display.insert(INSERT, time.strftime("%A %B %d, %Y\n\n"))
 
 # Loading the content using threading

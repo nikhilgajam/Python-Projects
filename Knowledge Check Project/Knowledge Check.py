@@ -7,6 +7,7 @@ import threading
 import html
 import random
 
+
 # Window
 root = Tk()
 root.config(bg="#333333")
@@ -15,12 +16,13 @@ root.geometry("600x440")
 root.resizable(0, 0)
 root.iconbitmap(True, "images/icon.ico")
 
+
 # Variables
 data = ""
 question = ""
 correct_option = ""
 ques_category = 9
-ques_difficulty = "easy"  # or medium or hard
+ques_difficulty = ""  # easy or medium or hard
 question_type = "multiple"  # or boolean
 correct_option_index = 0
 options = []
@@ -33,11 +35,16 @@ sound_var = BooleanVar(value=True)
 
 def load_question(var):
     global data
+
     try:
-        # Getting the data from Open Trivia Database
-        url = req.urlopen("https://opentdb.com/api.php?amount=1&category=" + str(ques_category) + "&difficulty=" +
-                          ques_difficulty + "&type=" + question_type)
-        data = url.read().decode()
+        # Runs if and else according to the ques_difficulty which is matched
+        if ques_difficulty == "":
+            url = req.urlopen("https://opentdb.com/api.php?amount=1&category=" + str(ques_category) + "&type=" +
+                              question_type)  # Getting the data from Open Trivia Database
+        else:
+            url = req.urlopen("https://opentdb.com/api.php?amount=1&category=" + str(ques_category) + "&difficulty=" +
+                              ques_difficulty + "&type=" + question_type)  # Getting the data from Open Trivia Database
+        data = url.read().decode('unicode-escape')  # decode() can also be used
         data = html.unescape(data)   # Converting html text to plain text
 
         if var == 1:
@@ -182,7 +189,10 @@ def settings():
 
         x = difficulty_var.get()
         if x != "Difficulty":
-            ques_difficulty = x.lower()
+            if x == "Any Difficulty":
+                ques_difficulty = ""
+            else:
+                ques_difficulty = x.lower()
             count += 1
 
         x = type_var.get()
@@ -194,8 +204,12 @@ def settings():
             count += 1
 
         if count > 0:
-            # Loads the question
+            # Loads a question
             threading.Thread(target=load_question, args=(1, )).start()
+            question_display['state'] = NORMAL
+            question_display.delete(1.0, END)
+            question_display.insert(END, "Wait a moment...")
+            question_display['state'] = DISABLED
 
         # Closes the settings window
         top.destroy()
@@ -214,7 +228,7 @@ def settings():
 
     # Difficulty option menu with its configurations, variable and list
     difficulty_var = StringVar()
-    difficulty_list = ["Difficulty", "Easy", "Medium", "Hard"]
+    difficulty_list = ["Difficulty", "Easy", "Medium", "Hard", "Any Difficulty"]
     difficulty_option_menu = ttk.OptionMenu(top, difficulty_var, *difficulty_list)
     difficulty_option_menu.pack(pady=6)
 
@@ -234,7 +248,7 @@ def settings():
         sound_check_box.deselect()
 
     # Change button with its change command
-    change_btn = Button(top, text="Apply Settings", fg="#e6e8eb", bg="#333333", command=change)
+    change_btn = Button(top, text="Apply Settings", fg="#e6e8eb", bg="#993e1c", command=change)
     change_btn.pack(padx=10, pady=26)
 
 
@@ -334,7 +348,7 @@ menu.add_cascade(label="About", menu=about_menu)
 about_menu.add_command(label="About Us", command=about_us)
 
 
-# Loads the question and displays the question and loads next question argument 0 means no and 1 means display content
+# Loads a question and displays the question and loads next question argument 0 means no and 1 means display content
 threading.Thread(target=load_question, args=(1, )).start()
 
 # root.eval('tk::PlaceWindow . center')  # To place the window in center of screen

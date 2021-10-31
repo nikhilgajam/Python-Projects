@@ -24,7 +24,7 @@ correct_option = ""
 ques_category = 9
 ques_difficulty = ""  # easy or medium or hard
 question_type = "multiple"  # or boolean
-correct_option_index = 0
+correct_option_index = -1
 options = []
 correct_score = wrong_score = 0
 answer_check = ""
@@ -34,7 +34,7 @@ sound_var = BooleanVar(value=True)
 # Commands
 
 def load_question(var):
-    global data
+    global data, correct_option_index
 
     try:
         # Runs if and else according to the ques_difficulty which is matched
@@ -52,15 +52,20 @@ def load_question(var):
             display_and_load_next_question()
 
     except Exception:
+        # Correct option index is going to be -1 when the question is not loaded completely
+        correct_option_index = -1
+
         question_display['state'] = NORMAL
         question_display.delete(1.0, END)
-        question_display.insert(END, "Check Your Internet Connection")
+        question_display.insert(END, "Check Your Internet Connection And Restart The Program")
         question_display['state'] = DISABLED
 
 
 def display_and_load_next_question():
     global data, question, correct_option, correct_option_index, answer_check
     try:
+        # Correct option index is going to be -1 when the question is not loaded completely
+        correct_option_index = -1
         # Previous answer display
         if question != "":
             answer_check = question + "  (Ans: " + correct_option + ")"
@@ -120,17 +125,21 @@ def display_and_load_next_question():
 def validate(num):
     global correct_score, wrong_score
 
-    if num == correct_option_index:
-        correct_score += 1
-        if sound_var.get():
-            threading.Thread(target=play_audio, args=(True, )).start()
-    else:
-        wrong_score += 1
-        if sound_var.get():
-            threading.Thread(target=play_audio, args=(False, )).start()
+    if correct_option_index != -1:
+        if num == correct_option_index:
+            correct_score += 1
+            if sound_var.get():
+                threading.Thread(target=play_audio, args=(True, )).start()
+        else:
+            wrong_score += 1
+            if sound_var.get():
+                threading.Thread(target=play_audio, args=(False, )).start()
 
-    score_lbl['text'] = "Correct: " + str(correct_score) + " \t\t   Wrong: " + str(wrong_score)
-    display_and_load_next_question()
+        score_lbl['text'] = "Correct: " + str(correct_score) + " \t\t   Wrong: " + str(wrong_score)
+        display_and_load_next_question()
+
+    else:
+        messagebox.showwarning("Warning", "Question is not yet loaded, wait till it loads")
 
 
 def play_audio(var):

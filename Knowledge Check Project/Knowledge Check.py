@@ -1,21 +1,19 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import simpledialog
 import urllib.request as req
 import playsound
 import threading
 import html
 import random
 
-
 # Window
 root = Tk()
 root.config(bg="#333333")
 root.title("Knowledge Check")
 root.geometry("600x440")
-root.resizable(0, 0)
 root.iconbitmap(True, "images/icon.ico")
-
 
 # Variables
 data = ""
@@ -29,6 +27,9 @@ options = []
 correct_score = wrong_score = 0
 answer_check = ""
 sound_var = BooleanVar(value=True)
+ques_category_selected = "Categories"
+ques_difficulty_selected = "Difficulty"
+ques_type_selected = "Type"
 
 
 # Commands
@@ -39,11 +40,16 @@ def load_question(var):
     try:
         # Runs if and else according to the ques_difficulty which is matched
         if ques_difficulty == "":
-            url = req.urlopen("https://opentdb.com/api.php?amount=1&category=" + str(ques_category) + "&type=" +
-                              question_type)  # Getting the data from Open Trivia Database
+            if ques_category_selected == 0:
+                url = req.urlopen("https://opentdb.com/api.php?amount=1&type=" +
+                                  question_type)  # Getting the data from Open Trivia Database
+            else:
+                url = req.urlopen("https://opentdb.com/api.php?amount=1&category=" + str(ques_category) + "&type=" +
+                                  question_type)  # Getting the data from Open Trivia Database
         else:
             url = req.urlopen("https://opentdb.com/api.php?amount=1&category=" + str(ques_category) + "&difficulty=" +
                               ques_difficulty + "&type=" + question_type)  # Getting the data from Open Trivia Database
+        data = data.replace("\\/", "/")  # Replaces \/ with /
         data = url.read().decode('unicode-escape')  # decode() can also be used
         data = html.unescape(data)   # Converting html text to plain text
 
@@ -66,6 +72,7 @@ def display_and_load_next_question():
     try:
         # Correct option index is going to be -1 when the question is not loaded completely
         correct_option_index = -1
+
         # Previous answer display
         if question != "":
             answer_check = question + "  (Ans: " + correct_option + ")"
@@ -177,6 +184,7 @@ def btn4_command(event=""):
 
 
 def settings():
+    global ques_category_selected, ques_difficulty_selected, ques_type_selected
     # This is used to open the settings window
     top = Toplevel(root, bg="#333333")
     top.title("Knowledge Check Settings")
@@ -186,30 +194,39 @@ def settings():
     top_title.pack(pady=10)
 
     def change():
-        global ques_category, ques_difficulty, question_type
+        global ques_category, ques_difficulty, question_type, ques_category_selected, ques_difficulty_selected, \
+            ques_type_selected, correct_option_index
+
+        # If question is not loaded then we cannot make any changes
+        if correct_option_index == -1:
+            messagebox.showerror("Error", "Cannot apply changes util present question is loaded")
+            return
 
         # Count variable will keep a count that settings are changed or not
         count = 0
         x = categories_var.get()
-        if x != "Categories":
+        if x != "Categories" and x != ques_category_selected:
             # Categories start with index 9 and categories in the category_list start with index 1
             ques_category = (8 + categories_list.index(x))
+            ques_category_selected = x
             count += 1
 
         x = difficulty_var.get()
-        if x != "Difficulty":
+        if x != "Difficulty" and x != ques_difficulty_selected:
             if x == "Any Difficulty":
                 ques_difficulty = ""
             else:
                 ques_difficulty = x.lower()
+            ques_difficulty_selected = x
             count += 1
 
         x = type_var.get()
-        if x != "Type":
+        if x != "Type" and x != ques_type_selected:
             if x == "Multiple Choice":
                 question_type = "multiple"
             else:
                 question_type = "boolean"
+            ques_type_selected = x
             count += 1
 
         if count > 0:
@@ -219,9 +236,22 @@ def settings():
             question_display.delete(1.0, END)
             question_display.insert(END, "Wait a moment...")
             question_display['state'] = DISABLED
+            correct_option_index = -1
 
         # Closes the settings window
         top.destroy()
+
+    def change_text_size():
+        size = simpledialog.askinteger("Knowledge Check", "Enter Text Size (16-26): ")
+
+        if size is None:
+            return
+
+        if size < 16 or size > 26:
+            messagebox.showerror("Error", "Enter text sizes only in this range (16-26)")
+        else:
+            question_display['font'] = ("Times New Roman", size)
+            prev_ans_display['font'] = ("Times New Roman", size-3)
 
     # Category option menu with its configurations, variable and list
     categories_list = ["Categories", "General Knowledge", "Entertainment: Books", "Entertainment: Film",
@@ -233,19 +263,26 @@ def settings():
                        "Entertainment: Cartoon & Animations"]
     categories_var = StringVar()
     categories_option_menu = ttk.OptionMenu(top, categories_var, *categories_list)
+    categories_var.set(ques_category_selected)
     categories_option_menu.pack(pady=6)
 
     # Difficulty option menu with its configurations, variable and list
     difficulty_var = StringVar()
     difficulty_list = ["Difficulty", "Easy", "Medium", "Hard", "Any Difficulty"]
     difficulty_option_menu = ttk.OptionMenu(top, difficulty_var, *difficulty_list)
+    difficulty_var.set(ques_difficulty_selected)
     difficulty_option_menu.pack(pady=6)
 
     # Type option menu with its configurations, variable and list
     type_var = StringVar()
     type_list = ["Type", "Multiple Choice", "True/False"]
     type_option_menu = ttk.OptionMenu(top, type_var, *type_list)
+    type_var.set(ques_type_selected)
     type_option_menu.pack(pady=6)
+
+    # Change text size button with its configuration
+    change_text_btn = Button(top, fg="#e6e8eb", bg="#333333", text="Change Display Text Size", command=change_text_size)
+    change_text_btn.pack(pady=6)
 
     # Sound check box with its configurations
     sound_check_box = Checkbutton(top, fg="#e6e8eb", bg="#333333", text=" Sound ", variable=sound_var, offvalue=False,
@@ -265,8 +302,9 @@ def helps():
     # This will open about us window
     messagebox.showinfo("Help", "Knowledge Check Is A Program Which Will Display Questions Related To Various "
                                 "Categories.\n"
-                                "Settings : You Can Turn Sound On Or Off And You Can Select (Category, Difficulty, "
-                                "Type) Of The Questions By Clicking On The Settings Menu.\n"
+                                "Settings : You Can Turn Sound On Or Off, Change Text Size And You "
+                                "Can Select (Category, Difficulty, Type) Of The Questions By Clicking On "
+                                "The Settings Menu.\n"
                                 "Selecting Options : You Can Either click On The Option Buttons (OR) 1, 2, 3, 4 or "
                                 "A, B, C, D Keys To Select An Option.\n"
                                 "Knowledge Check Needs Internet Connection.\n")
@@ -278,7 +316,7 @@ def about_us():
 
 
 # Title label
-title_lbl = Label(root, font=("Rockwell", 26), text="Knowledge Check", fg="#e6e8eb", bg="#333333")
+title_lbl = Label(root, font=("Times New Roman", 26, "bold"), text="Knowledge Check", fg="#e6e8eb", bg="#333333")
 title_lbl.pack()
 
 
@@ -355,7 +393,6 @@ settings_menu.add_command(label="Open Settings", command=settings)
 about_menu = Menu(menu, tearoff=0)
 menu.add_cascade(label="About", menu=about_menu)
 about_menu.add_command(label="About Us", command=about_us)
-
 
 # Loads a question and displays the question and loads next question argument 0 means no and 1 means display content
 threading.Thread(target=load_question, args=(1, )).start()

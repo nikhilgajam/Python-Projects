@@ -40,7 +40,7 @@ def load_question(var):
     try:
         # Runs if and else according to the ques_difficulty which is matched
         if ques_difficulty == "":
-            if ques_category_selected == 0:
+            if ques_category_selected == "Categories":
                 url = req.urlopen("https://opentdb.com/api.php?amount=1&type=" +
                                   question_type)  # Getting the data from Open Trivia Database
             else:
@@ -69,6 +69,7 @@ def load_question(var):
 
 def display_and_load_next_question():
     global data, question, correct_option, correct_option_index, answer_check
+
     try:
         # Correct option index is going to be -1 when the question is not loaded completely
         correct_option_index = -1
@@ -80,14 +81,6 @@ def display_and_load_next_question():
             prev_ans_display.delete(1.0, END)
             prev_ans_display.insert(END, answer_check)
             prev_ans_display['state'] = DISABLED
-
-        # Multiple and boolean settings
-        if question_type == "boolean":
-            btn3['state'] = DISABLED
-            btn4['state'] = DISABLED
-        else:
-            btn3['state'] = NORMAL
-            btn4['state'] = NORMAL
 
         # Question substring
         start = data.find('question":') + 11
@@ -194,6 +187,7 @@ def settings():
     top_title.pack(pady=10)
 
     def change():
+        # This method will change the settings of the question which is displayed
         global ques_category, ques_difficulty, question_type, ques_category_selected, ques_difficulty_selected, \
             ques_type_selected, correct_option_index
 
@@ -224,8 +218,12 @@ def settings():
         if x != "Type" and x != ques_type_selected:
             if x == "Multiple Choice":
                 question_type = "multiple"
+                btn3['state'] = NORMAL  # Multiple and boolean button settings
+                btn4['state'] = NORMAL  # Multiple and boolean button settings
             else:
                 question_type = "boolean"
+                btn3['state'] = DISABLED  # Multiple and boolean button settings
+                btn4['state'] = DISABLED  # Multiple and boolean button settings
             ques_type_selected = x
             count += 1
 
@@ -242,6 +240,7 @@ def settings():
         top.destroy()
 
     def change_text_size():
+        # Display text size will be changed by this method
         size = simpledialog.askinteger("Knowledge Check", "Enter Text Size (16-26): ")
 
         if size is None:

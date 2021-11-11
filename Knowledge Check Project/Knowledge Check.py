@@ -106,7 +106,7 @@ def display_and_load_next_question():
             options.append(i)
 
         random.shuffle(options)
-        c = 65
+        c = 65  # 65 is 'A' ASCII value and it will be increased to get 'B', 'C', 'D' alphabets
         for i in range(len(options)):
             if options[i] == correct_option:
                 correct_option_index = i

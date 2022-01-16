@@ -1,6 +1,8 @@
 import sys
 import os
 
+// Use command line arguments to make this code work
+
 pending = []
 completed = []
 pending_c = completed_c = 0
@@ -94,6 +96,7 @@ def end():
 
 
 if __name__ == "__main__":
+    
     if not os.path.isfile("task.txt"):
         create_task()
 

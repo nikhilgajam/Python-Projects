@@ -49,7 +49,7 @@ def iss_data():
 
     else:
 
-        # Opens map in a browser
+        # Opens map with marker in a browser
 
         print("\nOpening ISS Location In Your Browser")
         webbrowser.open_new(gmap)  # Google Map

@@ -1,5 +1,6 @@
 from urllib.request import Request, urlopen
 import re
+import html
 
 class TheBhagavadGita:
     # Chapter and verse ranges
@@ -88,7 +89,7 @@ class TheBhagavadGita:
 
             # Correcting a small space in the shloka
             if self.language == "":
-                data = data.replace("||<br>", " ||\n").replace("||</p>", " ||\n")
+                data = data.replace("||<br>", " ||\n").replace("||</p>", " ||\n").replace("|</p>", "|\n")
             
             if self.chapter_no == '1' and self.verse_no == '1' and self.language == "":
                 data = data.replace("||1", "|| 1")
@@ -150,10 +151,11 @@ class TheBhagavadGita:
         for i in all_lines:
             text += i.strip() + "\n"
         
+        text = html.unescape(text)
         return text
 
 # Using the API
 # api = TheBhagavadGita()
-# data = api.getData(1, 1, 'te')
+# data = api.getData(4, 0, 'en')
 # with open("a.txt", "w", encoding="utf-8") as p:
 #     p.write(data)

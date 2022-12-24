@@ -25,6 +25,10 @@ try:
         for k in range(j+1):
             ver = str(k)
             data = api.getData(i, k)
+            while "WinError" in data:
+                data = api.getData(i, k)
+                with open("a.txt", "w", encoding="utf-8") as p:
+                    p.write(data)
             path = "Bhagavad_Gita/English/Chapter_" + chp + "/Verse_" + ver + ".txt"
             with open(path, "w", encoding="utf-8") as p:
                 p.write(data)
@@ -40,6 +44,8 @@ try:
         for k in range(j+1):
             ver = str(k)
             data = api.getData(i, k, "hi")
+            while "WinError" in data:
+                data = api.getData(i, k, "hi")
             path = "Bhagavad_Gita/Hindi/Chapter_" + chp + "/Verse_" + ver + ".txt"
             with open(path, "w", encoding="utf-8") as p:
                 p.write(data)
@@ -55,6 +61,8 @@ try:
         for k in range(j+1):
             ver = str(k)
             data = api.getData(i, k, "te")
+            while "WinError" in data:
+                data = api.getData(i, k, "te")
             path = "Bhagavad_Gita/Telugu/Chapter_" + chp + "/Verse_" + ver + ".txt"
             with open(path, "w", encoding="utf-8") as p:
                 p.write(data)

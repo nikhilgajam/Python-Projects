@@ -1,0 +1,26 @@
+Smart India Hackathon
+
+
+
+Page 11  108  Solution to prevent copy right infringement/piracy/plagiarism of NCERT text books.
+
+Description	"Summary: The tool should be able to identify that the publication is the original or the pirated one based on the paper characteristics e.g., water mark, paper quality etc., text formatting, dimensions of book e.g., length, width and number of pages etc. The tool should scan the text published in the text books of different publishers using mobile phone, or any other devices or from inputting file and find-out whether the contents are plagiarized."
+Organization	Department of School Education & Literacy (DoSEL), Ministry of Education.
+Category	Software
+
+______________________________________________________________________________________________
+
+Page 33  322  Develop a system which can read and analyse handwritten text and convert it into normal editable text.
+
+Description	"A mechanism is required that can analyse handwritten text and then convert it into the editable text either in the respective local language or English."
+Organization	Ministry of Rural Development
+Category	Software
+
+
+_________________________________________________________________________________________________
+
+Page 55  543  Build a solution that is able to undertake Optical Character Recognition (OCR) on handwritten text in Hindi language. The result should be the equivalent text typed in Hindi with over ~70% accuracy. Solution must address issues such as non-standard ways of writing and poor handwriting.
+
+Description	"Digitization of Hindi handwritten text overcoming challenges like poor and non standard handwriting is the key focus area of this problem statement. There is immense potential for these paper-based documents to be intelligently digitized. This means going beyond scanning and simply retaining a soft copy, to actually converting the scanned copy into searchable and editable documents automatically without requiring any manual analysis and data entry. Build a solution that is able to undertake accurate OCR on handwritten text in Hindi language. • Challenges that arise due to non-standard ways of writing should be overcome."
+Organization	NATGRID, MHA
+Category	Software

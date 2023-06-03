@@ -21,12 +21,17 @@ class HashSave:
 
     def read_db(self, username):
         # Reads the data when username is given
-        db = sqlite3.connect("Save.db")
-        cursor = db.cursor()
-        cursor.execute("SELECT * FROM Passwords WHERE username='{}'".format(username))
-        data = cursor.fetchall()
-        cursor.close()
-        db.close()
+        data = ""
+        try:
+            db = sqlite3.connect("Save.db")
+            cursor = db.cursor()
+            cursor.execute("SELECT * FROM Passwords WHERE username='{}'".format(username))
+            data = cursor.fetchall()
+            cursor.close()
+            db.close()
+        except Exception as e:
+            data = "Error"
+        
         return data
 
 

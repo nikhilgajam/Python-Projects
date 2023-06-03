@@ -32,8 +32,8 @@ class HashSave:
 
 if __name__ == '__main__':
     obj = HashSave()
-    d = obj.hash("devi")
+    d = obj.hash("ben")
     print(d)
-    x = obj.save_in_db('g2', 'devi', 'dog', '1234')
-    read = obj.read_db('g2')
+    x = obj.save_in_db('10', 'ben', 'azmuth', '10000')
+    read = obj.read_db('10')
     print(read)

@@ -1,13 +1,9 @@
 import tkinter
 from tkinter import messagebox
-import threading
-import subprocess
-import time
 
 # Window
 window = tkinter.Tk()
 window.title("Tap Code Visualizer")
-# window.geometry("600x600")
 
 # Variables
 row_selected = False
@@ -26,6 +22,12 @@ TAP_CODE = [['A', 'B', 'C', 'D', 'E'],
 
 # Methods
 
+def clearSelColors():
+    # Clearing the selected colors
+    for i in range(1, 6):
+        for j in range(1, 6):
+            tap_grid_labels[i][j].config(bg="SystemButtonFace")  # Setting to default color
+
 def tapButtonPressed():
     global row_selected, col_selected, row_no, col_no
 
@@ -35,10 +37,7 @@ def tapButtonPressed():
     if col_selected != True and col_no >= 5:
         col_no = 0
 
-    # Clearing the selected colors
-    for i in range(1, 6):
-        for j in range(1, 6):
-            tap_grid_labels[i][j].config(bg="SystemButtonFace")  # Setting to default color
+    clearSelColors()
 
     if not row_selected:
         for i in range(1, 6):
@@ -64,10 +63,7 @@ def lockButtonPressed():
     if row_selected:
         col_no = 0
 
-    # Clearing the selected colors
-    for i in range(1, 6):
-        for j in range(1, 6):
-            tap_grid_labels[i][j].config(bg="SystemButtonFace")  # Setting to default color
+    clearSelColors()
     
     tapButtonPressed()
 
@@ -114,7 +110,6 @@ tap_grid_area.pack()
 
 # Tap code labels
 tap_grid_labels = [[tkinter.Label(tap_grid_area) for j in range(6)] for i in range(6)]
-
 for i in range(6):
     for j in range(6):
         tap_grid_labels[i][j].config(font=("Times New Roman", 22))

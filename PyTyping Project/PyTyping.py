@@ -1,7 +1,6 @@
 import tkinter
 import random
 
-
 # Window settings
 window = tkinter.Tk()
 window.title("PyTyping")
@@ -266,7 +265,6 @@ def updateTimeBox(time: int):
 
 
 # Widgets
-
 
 # Heading label 
 heading = tkinter.Label(window, text="PyTyping", font=("Times New Roman", 28))

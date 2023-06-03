@@ -35,11 +35,14 @@ class YoutubeLive:
                 if start == -1 or end == -1:  # If string is not found then break the loop
                     break
 
-                data[title] =video_id  # Adding data to the data dictionary
+                # Converts to unicode numbers to readable characters
+                title = str(title.encode().decode('unicode-escape').encode('ascii', 'ignore'), 'utf-8').strip()
+                data[title] = video_id  # Adding data to the data dictionary
 
             return data
         
         except Exception as e:
+            print(e)
             return "Check Your Internet Connection"
 
 

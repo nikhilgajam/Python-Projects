@@ -4,7 +4,6 @@ import random
 import webbrowser
 import HashingSaving
 
-
 # Variables
 INITIAL_SYMBOLS = ['☀', '☎', '☕']  # We can use symbols like this ['🦄', '🍇', '🍔'] also
 INITIAL_SYMBOL_CLICKED = ''
@@ -360,10 +359,8 @@ def gridPage(btn_name):
         back_btn.config(command=lambda: backButtonClicked("Grid Sign In"))
 
 
-# This will run only if we execute GUI.py
-if __name__ == '__main__':
-    mainPage()
-
+# Loading the main page
+mainPage()
 
 # Mainloop statement
 window.mainloop()

@@ -38,7 +38,7 @@ def start(e=""):
 
 def update_list(e=""):
     # This method will update the contents on the display when you type in the input_box
-    global keyword_pointer
+    global keywords, keyword_pointer
     
     inp = input_box.get()  # Getting the input data
 
@@ -53,6 +53,8 @@ def update_list(e=""):
             # Searching all types of the given input
             if i.startswith(inp) or i.startswith(inp.lower()) or i.startswith(inp.title()) or i.startswith(inp.upper()):
                 keywords.append(str(i))
+
+        keywords.sort()  # Sorting the keywords in ascending order
     
         display.insert(INSERT, "\n".join(keywords))
         keyword_pointer = -1  # Setting the keyword_pointer to -1 when list gets updated

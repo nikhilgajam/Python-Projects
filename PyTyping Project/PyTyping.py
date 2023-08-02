@@ -305,9 +305,9 @@ time_box.pack(padx=10, pady=40)
 analysis_display = tkinter.Label(window, font=("Times New Roman", 15))
 analysis_display.pack(pady=4)
 
+
 # Initalization
 init()
-
 # Start timer
 timer()
 

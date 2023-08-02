@@ -1,10 +1,12 @@
 import tkinter
 import random
 
+
 # Window settings
 window = tkinter.Tk()
 window.title("PyTyping")
-window.geometry("1050x500")
+window.geometry("1050x510")
+
 
 # Text
 text = '''Do you ever send or receive e-mails? Are you on the Internet a lot? Do you go to chat rooms? Did you know there are rules of behavior for all of these? The rules are called Netiquette. They can be applied to almost every situation -- real life, as well as cyberspace. These rules might seem kind of obvious to you, but they're important. They will help you and your friends' Internet experience be productive, as well as fun.
@@ -149,8 +151,11 @@ def displayAnalysis():
 
     # Gross WPM(Words Per Minute) = (No. of chars typed/5)/Time taken (in minutes)
     gross_wpm = 0
+    # CPM (Characters Per Minute) = WPM * 5
+    cpm = 0
     if time_taken_in_minutes > 0:
         gross_wpm = int((chars_typed_divided_by_5) / (time_taken_in_minutes))
+        cpm = round(gross_wpm * 5)
     # Gross strokes = All Characters Typed
     gross_strokes = chars_typed
 
@@ -159,11 +164,13 @@ def displayAnalysis():
     text_data += "Duration: " + str(time_taken) + " Seconds Of Total " + str(time_var) + " Seconds\n"
     if gross_wpm < 0:
         text_data += "Speed: Cannot Be Calculated [Try To Type For More Time With Less Mistakes]\n"
+        text_data += "CPM: Cannot Be Calculated\n"
     else:
         text_data += "Speed: " + str(gross_wpm) + " Words Per Minute (WPM)      [Typing Level :  " + getTypingLevel(gross_wpm) + "]\n"
+        text_data += "CPM: " + str(cpm) + " Characters Per Minute (CPM)\n"
     text_data += "Key Strokes: " + str(gross_strokes) + "\n"
     text_data += "Typing Speed Levels (In WPM):\n"
-    text_data += "(0-25 = Slow)      (26-45 = Average)      (46-65 = Fluent)      (66-80 = Fast)      (81-∞ = Insane)"
+    text_data += "(0-25 = Slow)      (26-45 = Average)      (46-65 = Fluent)      (66-80 = Fast)      (81-âˆž = Insane)"
 
     analysis_display['text'] = text_data
 
@@ -266,6 +273,7 @@ def updateTimeBox(time: int):
 
 # Widgets
 
+
 # Heading label 
 heading = tkinter.Label(window, text="PyTyping", font=("Times New Roman", 28))
 heading.pack(padx=40, pady=40)
@@ -302,6 +310,5 @@ init()
 
 # Start timer
 timer()
-
 
 window.mainloop()

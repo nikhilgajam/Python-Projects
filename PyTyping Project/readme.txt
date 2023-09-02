@@ -11,5 +11,7 @@ Esc   = You can press this key to change the displayed text before starting the 
 |   __| | | | | | | | . | |   | . |
 |__|  |_  | |_| |_  |  _|_|_|_|_  |
       |___|     |___|_|       |___|
-      
+
+
+
 You can see the realtime wpm and other info when you start typing.

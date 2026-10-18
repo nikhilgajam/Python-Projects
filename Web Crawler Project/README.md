@@ -1,6 +1,6 @@
-# SQLite Web Crawler
+# SQLite Web Crawler & Multi-Format File Downloader
 
-A robust, multi-threaded web crawler written in Python that crawls websites, extracts clean readable textual content, and stores records directly into a local SQLite database (`crawler.db`).
+A robust, multi-threaded web crawler written in Python that crawls websites, extracts clean readable textual content, downloads any specified file formats (such as **.pdf**, **image formats**, **.swf**, **documents**, **media**, or custom extensions), and stores metadata persistently into a local SQLite database (`crawler.db`).
 
 ---
 
@@ -12,18 +12,22 @@ A robust, multi-threaded web crawler written in Python that crawls websites, ext
 - [What You Learn From This Crawler](#what-you-learn-from-this-crawler)
 - [Installation & Setup](#installation--setup)
 - [Usage Guide](#usage-guide)
+  - [Text Crawling (Default)](#basic-crawl-default-seed)
+  - [Downloading Files (.pdf, images, .swf, etc.)](#downloading-files-pdf-images-swf-etc)
+  - [File Presets & Wildcards](#file-presets--wildcard-support)
+  - [Custom Output Directory & Limits](#custom-download-folder--limits)
 - [Visualizing & Understanding the Data](#visualizing--understanding-the-data)
 
 ---
 
 ## How It Works (Architecture & Lifecycle)
 
-The crawler operates as a **dynamic multi-threaded breadth-first graph traversal engine**:
+The crawler operates as a **dynamic multi-threaded breadth-first graph traversal engine** with concurrent file downloading:
 
 ```mermaid
 flowchart TD
     A[Start: Seed URLs] --> B[_load_visited_from_db]
-    B --> C[Filter Already Crawled URLs]
+    B --> C[Filter Already Crawled URLs & Files]
     C --> D[ThreadPoolExecutor Queue]
     
     subgraph Worker Thread [Worker Thread Lifecycle]
@@ -31,153 +35,122 @@ flowchart TD
         E --> F[2. HTTP GET Request with Timeout]
         F --> G{HTTP 200 OK?}
         G -- No --> H[Record Error Code in DB]
-        G -- Yes --> I[3. Clean HTML with BeautifulSoup]
-        I --> J[Remove script, style, noscript tags]
-        J --> K[Extract Full Readable Text & Title]
-        K --> L[4. Save Record to SQLite DB]
-        I --> M[5. Extract outgoing href links]
-        M --> N[urljoin: Resolve Relative URLs]
-        N --> O[urlparse: Normalize & Remove #fragments]
+        G -- Yes --> I{Content-Type / URL is File?}
+        
+        I -- Yes: Binary File --> J[Stream File to Disk]
+        J --> K[Save Metadata to 'files' Table]
+        
+        I -- No: HTML Page --> L[3. Clean HTML with BeautifulSoup]
+        L --> M[Remove script, style, noscript tags]
+        M --> N[Extract Full Readable Text & Title]
+        N --> O[4. Save Record to 'pages' Table]
+        L --> P[5. Discover Navigation Links & Media]
+        P --> Q[Check a, img, embed, object, source tags]
+        Q --> R[Normalize URLs with urljoin]
     end
 
-    O --> P{Max Pages Reached?}
-    P -- No --> Q[Add Discovered URLs to ThreadPool]
-    Q --> D
-    P -- Yes --> R[Finish Crawl Session]
+    R --> S{Limits Reached?}
+    S -- No --> T[Queue Discovered Pages & Files]
+    T --> D
+    S -- Yes --> U[Finish Crawl Session]
 ```
 
 ### Step-by-Step Execution Flow:
 
 1. **Database Schema Initialization (`_init_db`)**:
-   - Checks if `crawler.db` and the `pages` table exist. If not, it creates them with `url TEXT UNIQUE`.
+   - Creates `crawler.db` with two tables: `pages` (for text content) and `files` (for downloaded file metadata).
 
 2. **Session Resumption & Deduplication (`_load_visited_from_db`)**:
-   - Queries `SELECT url FROM pages` and populates an in-memory `visited = set()`.
-   - Any URL that was crawled in previous sessions is skipped instantly in $O(1)$ time, preventing duplicate work.
+   - Queries `SELECT url FROM pages` and `SELECT url FROM files` to populate in-memory `visited` and `visited_files` sets.
+   - Any URL already crawled or downloaded in prior sessions is skipped in $O(1)$ time.
 
 3. **Multi-threaded Worker Pool (`ThreadPoolExecutor`)**:
-   - Instead of crawling one page at a time (which is slow due to network latency), the crawler runs multiple concurrent worker threads (default: `max_workers=5`).
-   - Tasks are tracked via asynchronous `concurrent.futures`.
+   - Dispatches worker threads concurrently (default: `max_workers=5`).
+   - Dynamically balances HTML page extraction and binary file streaming downloads.
 
-4. **Politeness & Network Fetching (`crawl_page`)**:
-   - Each thread sleeps for a configurable duration (`delay=0.5s`) to avoid flooding or crashing target web servers.
-   - Sends an HTTP `GET` request with a custom `User-Agent` and a strict 10-second timeout.
+4. **Politeness & Network Fetching (`crawl_page` & `download_file`)**:
+   - Sleeps for a configurable duration (`delay=0.5s`) to respect target web servers.
+   - Sends an HTTP `GET` request with a descriptive `User-Agent` and strict network timeouts.
 
-5. **Content Extraction & Cleaning (`BeautifulSoup`)**:
-   - Non-content markup such as `<script>`, `<style>`, `<noscript>`, `<svg>`, `<header>`, and `<footer>` tags are stripped out.
-   - Extracts all visible body text cleanly using `soup.get_text(separator=' ', strip=True)`.
+5. **Resource Inspection & Content Extraction**:
+   - **For HTML pages**: Strips non-content tags (`<script>`, `<style>`, `<noscript>`, `<svg>`) and extracts clean text into SQLite `pages`.
+   - **For Target Files (`.pdf`, images, `.swf`, etc.)**: Streams file contents in 64KB chunks to protect RAM, sanitizes filenames to prevent filesystem errors, and saves metadata into SQLite `files`.
 
-6. **SQLite Storage (`_save_to_db`)**:
-   - Inserts or updates the record into `crawler.db` with the URL, title, complete text content, HTTP status code, and crawl timestamp.
-
-7. **URL Normalization & Expansion**:
-   - Finds all `<a href="...">` links on the page.
-   - Converts relative URLs (e.g., `/articles/news`) into absolute links (`https://example.com/articles/news`) using `urljoin`.
-   - Strips URL fragments (`#comments`) so duplicate section anchors are treated as one unique page.
-   - Newly discovered URLs are queued back into the active thread pool until the `max_pages` limit is reached.
+6. **Comprehensive Resource Discovery**:
+   - **Page Links**: Outgoing `<a href="...">` links that navigate to new HTML pages are queued for BFS traversal.
+   - **Files**: Inspects `<a href>`, `<img src>`, `<embed src>`, `<object data>`, `<param name="movie">`, and `<source src>` tags. Any target matching allowed extensions is scheduled for streaming download.
 
 ---
 
 ## How Breadth-First Search (BFS) Works
 
 ### 1. The Web as a Directed Graph
-- **Nodes** = Web pages (URLs)
-- **Edges** = Hyperlinks (`<a href="...">`)
+- **Nodes** = Web pages and resources (URLs)
+- **Edges** = Hyperlinks and media tags (`<a>`, `<img>`, `<embed>`, `<object>`)
 
 ```
           [ Seed URL ]                 <-- Level 0 (Start)
           /    |     \
-     [Link A] [Link B] [Link C]        <-- Level 1 (Immediate links on Seed)
-      /   \      |        \
-   [Link D]... [Link E]   [Link F]     <-- Level 2 (Links found inside A, B, C)
+     [Link A] [Link B] [File: report.pdf]   <-- Level 1 (Links & files on Seed)
+      /   \      |        
+   [Link D]... [File: game.swf]             <-- Level 2 (Discovered inside A, B)
 ```
 
-In graph theory, **Breadth-First Search (BFS)** traverses all neighbor nodes at current depth level $k$ before proceeding to explore deeper nodes at level $k+1$.
-
-### 2. Implementation in Code
-In `crawler.py`, the BFS queue is managed concurrently through Python's `ThreadPoolExecutor`:
-1. **Level 0 Dispatch**: The seed URL is submitted first:
-   ```python
-   futures = {executor.submit(self.crawl_page, url): url for url in urls_to_crawl}
-   ```
-2. **Discovering Level 1 Links**: Once the seed page finishes, all links found on it (`Link A`, `Link B`, `Link C`) are extracted.
-3. **Queueing to the Back (FIFO)**:
-   ```python
-   with self.lock:
-       for link in new_links:
-           if link not in self.visited and (len(futures) + crawled_count) < self.max_pages:
-               self.visited.add(link)
-               # Appends to the back of the ThreadPool queue
-               futures[executor.submit(self.crawl_page, link)] = link
-   ```
-   Newly discovered links are scheduled at the **tail** of the executor's task queue. As a result, all sibling pages (Level 1) are crawled before the crawler dives deeper into child pages (Level 2).
-
-### 3. Why BFS is Preferred over DFS for Web Crawlers
-
-| Feature | BFS (Breadth-First Search) | DFS (Depth-First Search) |
-| :--- | :--- | :--- |
-| **Exploration Strategy** | Discovers broad, diverse content across the site first. | Dives deep into a single narrow chain of pages. |
-| **Trap Resistance** | Highly resistant to spider traps and infinite URL recursion loops. | Can get trapped in infinite calendar/archive loops indefinitely. |
-| **Page Importance** | Prioritizes top-level pages (homepages, category menus) where the most valuable links reside. | Might index thousands of low-value leaf pages before touching main sections. |
+In **Breadth-First Search (BFS)**, all immediate sibling pages and resources at depth level $k$ are processed before diving deeper into level $k+1$.
 
 ---
 
 ## Database Schema
 
-All data is stored locally in `crawler.db` inside the `pages` table:
+All data is stored locally in `crawler.db`:
 
+### `pages` Table (Text Content)
 | Column | Type | Description |
 | :--- | :--- | :--- |
 | `id` | `INTEGER PRIMARY KEY` | Auto-incrementing unique row identifier. |
-| `url` | `TEXT UNIQUE` | Normalized URL of the crawled page. |
+| `url` | `TEXT UNIQUE` | Normalized URL of the crawled web page. |
 | `title` | `TEXT` | Extracted `<title>` tag from the HTML document. |
-| `content` | `TEXT` | Complete clean readable textual content extracted from the page. |
-| `status_code` | `INTEGER` | HTTP response code (e.g., `200` for success, `404`, `500`, etc.). |
-| `crawled_at` | `TIMESTAMP` | ISO timestamp of when the page was crawled. |
+| `content` | `TEXT` | Complete clean readable textual content. |
+| `status_code` | `INTEGER` | HTTP response code (e.g., `200`, `404`, `500`). |
+| `crawled_at` | `TIMESTAMP` | Timestamp of when the page was crawled. |
+
+### `files` Table (Downloaded Files)
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `INTEGER PRIMARY KEY` | Auto-incrementing unique row identifier. |
+| `url` | `TEXT UNIQUE` | Unique URL of the downloaded file. |
+| `file_path` | `TEXT` | Local absolute file path on disk. |
+| `file_name` | `TEXT` | Sanitized filename. |
+| `file_type` | `TEXT` | File extension (e.g., `.pdf`, `.swf`, `.png`, `.jpg`). |
+| `file_size` | `INTEGER` | Size of the file in bytes. |
+| `mime_type` | `TEXT` | Content-Type header reported by the server. |
+| `source_page` | `TEXT` | URL of the HTML page where the file was discovered. |
+| `status_code` | `INTEGER` | HTTP status code. |
+| `downloaded_at` | `TIMESTAMP` | Timestamp when the file was downloaded. |
 
 ---
 
 ## Key Features
 
-- **Multi-threaded Concurrency**: Scales scraping performance with concurrent worker threads.
-- **Deduplication & Resumption**: Never visits the same URL twice, even across multiple program restarts.
-- **Zero Data Loss**: Stores 100% of the extracted text content directly in SQLite.
-- **Server-Polite**: Built-in delay mechanism and custom User-Agent headers.
-- **Fault-Tolerant**: Network timeouts, DNS errors, or HTTP errors are caught and logged without crashing the crawler.
-
----
-
-## What You Learn From This Crawler
-
-Building and analyzing this project teaches fundamental software engineering and distributed systems concepts:
-
-### 1. Concurrent Programming & Thread Safety
-- **Multi-threading with `ThreadPoolExecutor`**: How to run multiple network I/O operations simultaneously without blocking main program execution.
-- **Race Condition Prevention (`threading.Lock`)**: Why shared state (such as tracking visited URLs across worker threads) requires synchronization to prevent duplicate requests or corrupted memory.
-
-### 2. Graph Algorithms & Traversal in Practice
-- **The Web as a Graph**: Applying **Breadth-First Search (BFS)** to real-world network data where web pages are nodes and links are directed edges.
-- **URL Normalization & Hygiene**: How to handle edge cases like relative paths (`/about`), protocol differences (`http` vs `https`), and stripping anchor fragments (`#comments`) to avoid infinite crawl loops.
-
-### 3. Resilient Data Pipeline & Idempotency
-- **Persistent State across Crashes**: How checking the database at startup and using `INSERT OR REPLACE` ensures idempotency—the crawler can be paused, interrupted, or restarted at any time without duplicating work.
-- **DOM Parsing & Text Cleansing**: Using `BeautifulSoup` to strip non-content tags (`<script>`, `<style>`, `<noscript>`, `<svg>`) to generate clean plain text suitable for NLP, search indexing, or LLM/RAG pipelines.
-
-### 4. Real-World Applications & Industry Use Cases
-- **Search Engines**: Web crawlers form the foundation of indexing engines like Google and Bing.
-- **AI & LLM Training / RAG**: Gathering clean offline training corpora and contextual knowledge bases for Retrieval-Augmented Generation.
-- **Market Intelligence**: Price comparison engines, competitive product tracking, and job board aggregators.
-- **SEO & Site Health Auditing**: Discovering broken internal links (404/500 status codes), missing titles, or redirect chains across a website.
+- **Multi-Format File Support**: Specify any file extensions (`.pdf`, images, `.swf`, `.zip`, `.mp4`, etc.) or presets.
+- **Embedded Media Detection**: Extracts files from `<a href>`, `<img src>`, `<embed src>`, `<object data>`, `<param name="movie">`, and `<source src>` tags.
+- **Streaming Downloader**: Streams files in 64KB chunks to protect RAM.
+- **Extension & Content-Type Validation**: Accurately distinguishes genuine file extensions from URL slugs containing periods (such as version numbers `/v1.0/` or decimal measurements like `6.3-inch-display`), and verifies server `Content-Type` headers to prevent web pages from being downloaded as raw files.
+- **Content-Disposition Support**: Reads server-provided attachment filenames and extensions directly from HTTP headers when available.
+- **Safe Filename Sanitization**: Protects against path traversal, illegal characters, and Windows reserved filenames (CON, PRN, AUX, etc.).
+- **Multi-threaded Concurrency**: Concurrently crawls pages and downloads files using `ThreadPoolExecutor`.
+- **Deduplication & Session Resumption**: Remembers both visited pages and downloaded files across runs in SQLite.
+- **Zero Text Loss**: Stores 100% of readable HTML text into SQLite.
 
 ---
 
 ## Installation & Setup
 
-1. Open your terminal in the `web-crawler` folder:
+1. Open your terminal in the project directory:
    ```bash
-   cd web-crawler
+   cd "Web Crawler Project"
    ```
-2. Install the required dependencies:
+2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
@@ -186,39 +159,87 @@ Building and analyzing this project teaches fundamental software engineering and
 
 ## Usage Guide
 
-### Basic Crawl (Default Seed)
-To run the crawler with the default starting URL:
+### Basic Crawl (Default: Downloads All Files & Saves Text)
+Run the crawler directly on any URL. It starts crawling and downloading all discovered files automatically:
 ```bash
-python crawler.py
+python crawler.py https://example.com
 ```
 
-### Custom Seed URLs
-Pass one or more starting URLs directly as command-line arguments:
+> **Default Behavior**: By default (`DEFAULT_FILE_TYPES = "all"`), the crawler extracts all clean page text into SQLite and downloads all files (`.pdf`, images, `.swf`, media, etc.) into the `downloads/` folder.
+
+---
+
+### Downloading Only Specific File Formats (.pdf, images, .swf, etc.)
+Use `--file-types` (or `-f`) to specify only the formats you want:
+
 ```bash
-python crawler.py https://news.ycombinator.com/
+# Download .pdf and .swf files:
+python crawler.py https://example.com --file-types .pdf .swf
+
+# Download images and .pdf:
+python crawler.py https://example.com -f .png .jpg .pdf
+
+# Download Flash files (.swf), vector graphics (.svg), and documents (.pdf):
+python crawler.py https://example.com -f .swf .svg .pdf
 ```
 
-Or multiple starting seeds:
+### File Presets & Wildcard Support
+For convenience, use pre-configured presets:
+
+| Preset | Extensions Included |
+| :--- | :--- |
+| `images` | `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.svg`, `.bmp`, `.ico`, `.tiff`, `.avif` |
+| `docs` | `.pdf`, `.doc`, `.docx`, `.xls`, `.xlsx`, `.ppt`, `.pptx`, `.txt`, `.rtf`, `.csv` |
+| `flash` | `.swf`, `.flv`, `.spl` |
+| `media` | `.mp3`, `.mp4`, `.wav`, `.avi`, `.mov`, `.mkv`, `.ogg`, `.webm`, `.flac` |
+| `archives` | `.zip`, `.tar`, `.gz`, `.rar`, `.7z`, `.bz2`, `.xz` |
+| `all` or `*` | Any non-HTML file format |
+
+Examples:
 ```bash
-python crawler.py https://en.wikipedia.org/wiki/Web_crawler https://news.ycombinator.com/
+# Download all image formats:
+python crawler.py https://example.com -f images
+
+# Combine presets and specific extensions:
+python crawler.py https://example.com -f images .pdf .swf
+
+# Download any file format encountered:
+python crawler.py https://example.com -f all
 ```
 
-### Adjusting Limits
-Inside `crawler.py`, you can customize parameters in the `__init__` method:
-- `max_workers=5`: Number of simultaneous threads.
-- `max_pages=100`: Maximum pages to crawl in one run.
-- `delay=0.5`: Delay in seconds between requests per thread.
+### Custom Download Folder & Limits
+```bash
+# Save files to a custom directory with a safety cap of 50 files:
+python crawler.py https://example.com -f images,pdf -o my_downloads --max-files 50 --max-pages 20
+```
+
+### All CLI Options
+```
+python crawler.py [-h] [--file-types FILE_TYPES [FILE_TYPES ...]]
+                  [--download-dir DOWNLOAD_DIR] [--max-pages MAX_PAGES]
+                  [--max-files MAX_FILES] [--max-workers MAX_WORKERS]
+                  [--delay DELAY] [--db-path DB_PATH] [--non-interactive]
+                  [seeds ...]
+```
 
 ---
 
 ## Visualizing & Understanding the Data
 
-To analyze the stored data without needing any external viewer apps, run the included visualizer tool:
+To inspect both crawled text and downloaded files, run the visualizer tool:
 
 ```bash
 python visualize.py
 ```
 
 This will:
-1. **Print an instant CLI summary**: Page count, status code ratios, top domains, and frequent keywords.
-2. **Generate `report.html`**: An interactive dashboard with Chart.js keyword charts, domain breakdown, and a live searchable table of all records.
+1. **Print an instant CLI summary**:
+   - Total pages crawled and average page length
+   - Total files downloaded and total storage consumed (in KB/MB)
+   - Breakdown of downloaded file formats (e.g. `.pdf`: 12, `.png`: 35, `.swf`: 4)
+   - Top domains and keywords
+2. **Generate `report.html` and launch the visual dashboard in your browser**:
+   - **KPI Cards**: Pages, files downloaded, storage size, success rates
+   - **Interactive Charts**: Keywords frequency, domain distribution, downloaded file types breakdown
+   - **Crawled Pages Explorer**: Searchable table of all web pages with content snippets
+   - **Downloaded Files Explorer**: Searchable table showing file formats, formatted sizes, remote URLs, local storage paths, and source pages.
